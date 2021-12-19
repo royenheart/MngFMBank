@@ -15,6 +15,7 @@ public class User implements Cloneable {
 
     // Limitations
 
+    public static final char[] LIMITED_WORD = {'%', ':', '%'};
     public static final int MAX_AGE = 69;
     public static final int MIN_AGE = 18;
     public static final int MIN_NAME = 1;
@@ -114,22 +115,17 @@ public class User implements Cloneable {
         return heir.clone();
     }
 
-    public int setPassword(String password) {
-        int passwdLength = password.length();
-        if (passwdLength < MIN_PASSWD) {
-            return -1;
-        } else if (passwdLength > MAX_PASSWD) {
-            return 1;
-        } else {
-            this.password = password;
-            return 0;
-        }
-    }
+    public void setPassword(String password) { this.password = password; }
 
     public void setPhone(String phone) {
         this.phone = phone;
     }
 
+    /**
+     * 更新年龄
+     * @param currentTime 服务器（星球）当前时间
+     * @return 计算后的年龄
+     */
     public int updateAge(Date currentTime) {
         int age = CalculateApi.dateInterval(birth, currentTime);
         if (this.age < MIN_AGE) {

@@ -1,5 +1,9 @@
 package com.royenheart.basicsets;
 
+import com.google.gson.annotations.Expose;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -27,11 +31,17 @@ public class Planet {
 
     public static String bankName = "飞马皇家银行";
 
+    @Expose
     private int wars;
+    @Expose
     private double ecoRate;
+    @Expose
     private double ecoBubble;
+    @Expose
     private double bankWill;
+    @Expose
     private double investFire;
+    @Expose
     private Date planetTime;
 
     public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, Date planetTime) {
@@ -41,6 +51,21 @@ public class Planet {
         this.bankWill = bankWill;
         this.investFire = investFire;
         this.planetTime = planetTime;
+    }
+
+    public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, String planetTime) {
+        this.wars = wars;
+        this.ecoRate = ecoRate;
+        this.ecoBubble = ecoBubble;
+        this.bankWill = bankWill;
+        this.investFire = investFire;
+        try {
+            this.planetTime = new SimpleDateFormat("yyyy-MM-dd").parse(planetTime);
+        } catch (ParseException e) {
+            System.out.println(planetTime + "日期解析错误");
+            e.printStackTrace();
+            this.planetTime = new Date();
+        }
     }
 
     public int getWars() {
@@ -63,6 +88,10 @@ public class Planet {
         return investFire;
     }
 
+    public Date getPlanetTime() {
+        return planetTime;
+    }
+
     public void setWars(int wars) {
         this.wars = wars;
     }
@@ -81,5 +110,9 @@ public class Planet {
 
     public void setInvestFire(double investFire) {
         this.investFire = investFire;
+    }
+
+    public void setPlanetTime(Date planetTime) {
+        this.planetTime = planetTime;
     }
 }

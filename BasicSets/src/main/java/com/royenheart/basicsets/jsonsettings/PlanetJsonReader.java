@@ -2,7 +2,7 @@ package com.royenheart.basicsets.jsonsettings;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.royenheart.basicsets.Server;
+import com.royenheart.basicsets.Planet;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,14 +12,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * 服务端Json配置文件读入
+ * 星球Json数据读入
  * @author RoyenHeart
  */
-public class ServerJsonReader extends JsonReader {
+public class PlanetJsonReader extends JsonReader {
 
-    private Server serverSets;
+    private Planet planetSets;
 
-    public Server getServerFromSets() {
+    public Planet getPlanetFromSets() {
         boolean syntax;
         try {
             syntax = initial();
@@ -28,20 +28,20 @@ public class ServerJsonReader extends JsonReader {
             syntax = false;
             e.printStackTrace();
         }
-        return (syntax)?serverSets:(serverSets = new Server("127.0.0.1", "9999", "default", "database", "123456"));
+        return (syntax)?planetSets:(planetSets = new Planet(0, 10, 0.3, 0.6, 0.4, "2045-1-1"));
     }
 
     @Override
     public boolean initial() throws IOException {
         Gson gson = new Gson();
 
-        String path = "resources/server/";
+        String path = "resources/planet/";
         File file = new File(path+"settings.json");
         Path fp = file.toPath();
 
         Reader reader = Files.newBufferedReader(fp, StandardCharsets.UTF_8);
         try {
-            this.serverSets = gson.fromJson(reader, Server.class);
+            this.planetSets = gson.fromJson(reader, Planet.class);
         } catch (JsonSyntaxException e) {
             System.err.println(file.getName() + ":json格式错误，已跳过");
             e.printStackTrace();
@@ -50,4 +50,5 @@ public class ServerJsonReader extends JsonReader {
         reader.close();
         return true;
     }
+
 }

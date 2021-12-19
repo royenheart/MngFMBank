@@ -6,7 +6,7 @@
 
     <groupId>com.royenheart</groupId>
     <artifactId>Client</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,7 +15,7 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
-    <name>飞马银行管理系统</name>
+    <name>飞马银行管理系统-Client</name>
     <description>飞马银行管理系统-客户端</description>
 
 </project>

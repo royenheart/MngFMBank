@@ -60,7 +60,7 @@
         </plugins>
     </build>
 
-    <name>飞马银行管理系统</name>
+    <name>飞马银行管理系统-Server</name>
     <description>飞马银行管理系统-服务端</description>
 
 </project>

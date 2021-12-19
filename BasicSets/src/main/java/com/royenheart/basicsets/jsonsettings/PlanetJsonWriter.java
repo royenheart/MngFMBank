@@ -2,6 +2,7 @@ package com.royenheart.basicsets.jsonsettings;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.royenheart.basicsets.Planet;
 import com.royenheart.basicsets.Server;
 
 import java.io.File;
@@ -11,15 +12,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 /**
- * 服务器Json配置文件保存
- * @author RoyenHeart
+ * 行星Json数据保存
  */
-public class ServerJsonWriter extends JsonWriter {
+public class PlanetJsonWriter extends JsonWriter {
 
     @Override
     public boolean store(Object obj) {
-        Server sets = (Server) obj;
-        String fileName = "resources/server/settings.json";
+        Planet sets = (Planet) obj;
+        String fileName = "resources/planet/settings.json";
         File file = new File(fileName);
         Writer writer;
 
@@ -29,11 +29,11 @@ public class ServerJsonWriter extends JsonWriter {
 
         try {
             writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8);
-            gson.toJson(sets, Server.class, writer);
+            gson.toJson(sets, Planet.class, writer);
             writer.close();
         } catch (IOException e) {
             System.err.println("配置文件保存失败，将当前配置打印至终端");
-            gson.toJson(sets, Server.class, System.out);
+            gson.toJson(sets, Planet.class, System.out);
             e.printStackTrace();
             return false;
         }

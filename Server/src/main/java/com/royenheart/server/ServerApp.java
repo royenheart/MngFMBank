@@ -7,6 +7,7 @@ package com.royenheart.server;
  *     1. 邮件系统管理
  *     2. 客户端访问多线程处理请求
  *     3. 多开辟一个线程运行星球的时间
+ *     分配线程，管理资源，输出连接
  * </p>
  * @author RoyenHeart
  */

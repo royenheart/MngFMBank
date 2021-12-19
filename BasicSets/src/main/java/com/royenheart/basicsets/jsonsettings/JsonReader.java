@@ -1,6 +1,6 @@
 package com.royenheart.basicsets.jsonsettings;
 
-import java.io.File;
+import java.io.IOException;
 
 /**
  * Json文件读入，抽象类
@@ -8,13 +8,9 @@ import java.io.File;
  */
 abstract public class JsonReader {
 
-    private boolean mkdirResources(File make) throws SecurityException {
-        return make.mkdir();
-    }
-
     /**
      * Json文件读入并返回对应对象
      */
-    abstract void initial();
+    public abstract boolean initial() throws IOException;
 
 }

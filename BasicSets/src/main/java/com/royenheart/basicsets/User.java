@@ -6,6 +6,9 @@ import java.util.Date;
 
 /**
  * Bank User Specification
+ * <p>
+ *     accountId为个人账户Id，只允许10位数字，0000000000编号保留用作银行本身
+ * </p>
  * @author RoyenHeart
  */
 public class User implements Cloneable {
@@ -20,6 +23,7 @@ public class User implements Cloneable {
     public static final double MIN_MONEY = Double.MIN_VALUE;
     public static final double MAX_MONEY = Double.MAX_VALUE;
     public static final int MIN_PASSWD = 4;
+    public static final int MAX_PASSWD = 20;
     public static final int ACCOUNT_ID_LEN = 10;
     public static final int PERSONAL_ID_LEN = 12;
     public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -110,8 +114,16 @@ public class User implements Cloneable {
         return heir.clone();
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public int setPassword(String password) {
+        int passwdLength = password.length();
+        if (passwdLength < MIN_PASSWD) {
+            return -1;
+        } else if (passwdLength > MAX_PASSWD) {
+            return 1;
+        } else {
+            this.password = password;
+            return 0;
+        }
     }
 
     public void setPhone(String phone) {
@@ -119,12 +131,13 @@ public class User implements Cloneable {
     }
 
     public int updateAge(Date currentTime) {
-        this.age = CalculateApi.dateInterval(birth, currentTime);
+        int age = CalculateApi.dateInterval(birth, currentTime);
         if (this.age < MIN_AGE) {
             return -1;
         } else if (this.age > MAX_AGE) {
             return 1;
         } else {
+            this.age = age;
             return 0;
         }
     }

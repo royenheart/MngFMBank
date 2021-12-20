@@ -3,15 +3,19 @@ package com.royenheart.server.threads;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 线程池命名线程工厂(更易于区分)
+ * @author RoyenHeart
+ */
 public class NamedThreadFactory implements ThreadFactory {
 
-    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+    private static final AtomicInteger POOL_NUMBER = new AtomicInteger(1);
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final ThreadGroup threadsGrp;
-    private String poolName;
+    private final String poolName;
 
     public NamedThreadFactory(String name) {
-        this.poolName = name + "-" + poolNumber.getAndIncrement() + "-thread-";
+        this.poolName = name + "-" + POOL_NUMBER.getAndIncrement() + "-thread-";
         SecurityManager s = System.getSecurityManager();
         threadsGrp = (s != null)?s.getThreadGroup():Thread.currentThread().getThreadGroup();
     }

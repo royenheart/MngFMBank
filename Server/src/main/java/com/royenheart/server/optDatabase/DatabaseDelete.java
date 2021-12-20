@@ -1,6 +1,5 @@
 package com.royenheart.server.optDatabase;
 
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -10,20 +9,13 @@ import java.util.Iterator;
  */
 abstract public class DatabaseDelete extends DatabaseOperations {
 
-    protected String database;
+    protected String tables;
     protected HashMap<String, String> keyValue;
 
-    public DatabaseDelete(Connection con, String database) {
-        super(con);
-        this.database = database;
-    }
-
-    public void addKeyValue(String key, String value) {
-        keyValue.put(key, value);
-    }
+    public DatabaseDelete() {}
 
     protected String getSql() {
-        StringBuffer sql = new StringBuffer("DELETE FROM " + database + " where ");
+        StringBuilder sql = new StringBuilder("DELETE FROM " + tables + " where ");
         Iterator<String> iterator = keyValue.keySet().iterator();
         while (iterator.hasNext()) {
             String key = iterator.next();

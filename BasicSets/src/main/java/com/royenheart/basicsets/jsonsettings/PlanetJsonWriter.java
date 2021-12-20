@@ -3,7 +3,6 @@ package com.royenheart.basicsets.jsonsettings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.royenheart.basicsets.Planet;
-import com.royenheart.basicsets.Server;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.nio.file.Files;
 
 /**
  * 行星Json数据保存
+ * @author RoyenHeart
  */
 public class PlanetJsonWriter extends JsonWriter {
 

@@ -1,6 +1,5 @@
 package com.royenheart.server.optDatabase;
 
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -9,27 +8,32 @@ import java.util.Iterator;
  * @author RoyenHeart
  */
 abstract public class DataBaseUpdate extends DatabaseOperations {
-    protected String database;
+    protected String tables;
     protected HashMap<String, String> keyValue;
-    protected String field;
-    protected String fieldValue;
+    protected HashMap<String, String> fieldWithValue;
 
-    public DataBaseUpdate(Connection con, String database, String field, String fieldValue) {
-        super(con);
-        this.database = database;
-        this.field = field;
-        this.fieldValue = fieldValue;
-    }
-
-    public void addKeyValue(String key, String value) {
-        keyValue.put(key, value);
-    }
+    public DataBaseUpdate() {}
 
     protected String getSql() {
-        StringBuffer sql = new StringBuffer("UPDATE " + database + " SET ");
+        StringBuilder sql = new StringBuilder("UPDATE " + tables + " SET ");
 
-        sql.append(field).append("=").append(fieldValue).append(" where ");
+        /*
+        获取更新的数值的键值对填入sql语句中
+         */
+        Iterator<String> fields = fieldWithValue.keySet().iterator();
+        while (fields.hasNext()) {
+            String field = fields.next();
+            String value = fieldWithValue.get(field);
+            sql.append(field).append("=").append("'").append(value).append("'");
+            if (fields.hasNext()) {
+                sql.append(",");
+            }
+        }
+        sql.append(" WHERE ");
 
+        /*
+        获取sql条件子句
+         */
         Iterator<String> iteratorF = keyValue.keySet().iterator();
         while (iteratorF.hasNext()) {
             String key = iteratorF.next();

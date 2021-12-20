@@ -1,34 +1,113 @@
 package com.royenheart.server.threads;
 
-import java.io.*;
+import com.royenheart.basicsets.Server;
+import com.royenheart.server.DatabaseLink;
+import com.royenheart.server.Functions;
+import com.royenheart.server.ParseRequest;
+import com.royenheart.server.ServerApp;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
 
-public class ServerOperationThread extends Thread {
+/**
+ * 普通操作线程
+ * <p>
+ *     可实现功能
+ *     1. 查询余额
+ *     2. 取钱
+ *     3. 存钱
+ *     4. 转账
+ *     5. 修改用户信息
+ *     6. 开户
+ *     7. 销户
+ *     8. 导入xls文件批量操作（需要额外的转换）
+ *     9. 将特定查询（Query）再转换为xls文件返回给服务端
+ * </p>
+ * @author RoyenHeart
+ */
+public class ServerOperationThread extends ServerThread implements Runnable {
 
-    private Socket link;
-    private OutputStreamWriter outStream;
-    private InputStreamReader inStream;
-    private BufferedWriter out;
-    private BufferedReader in;
+    private DataOutputStream out;
+    private DataInputStream in;
+    private final InetAddress clientAddress;
+    private final Server serverSets;
 
-    public ServerOperationThread(Socket socket) {
-        link = socket;
+    public ServerOperationThread(Socket socket, Server serverSets) {
+        this.serverSets = serverSets;
+        clientAddress = socket.getInetAddress();
         try {
-            inStream = new InputStreamReader(link.getInputStream(), StandardCharsets.UTF_8);
-            outStream = new OutputStreamWriter(link.getOutputStream(), StandardCharsets.UTF_8);
-            in = new BufferedReader(inStream);
-            out = new BufferedWriter(outStream);
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            System.err.println(link.getLocalAddress() + ":客户连接失败，已断开连接");
+            System.err.println(socket.getLocalAddress() + ":客户连接失败，已断开连接");
             e.printStackTrace();
         }
     }
 
     @Override
     public void run() {
-        while (true) {
+        String request;
 
+        while (true) {
+            try {
+                // 不断接收请求，每一个请求进行操作
+                request = in.readUTF();
+                System.out.printf("接收到请求，从%s得到请求\n%s\n", clientAddress, request);
+
+                // 解析请求字段
+                ParseRequest parseMachine = new ParseRequest(request);
+                if (parseMachine.getLegal()) {
+                    System.out.println("解析请求成功");
+                } else {
+                    System.err.println("请求不符合规范，请求退回");
+                    out.writeUTF("请求错误");
+                    continue;
+                }
+
+                // 根据请求字段连接数据库
+                Connection newCon = new DatabaseLink(serverSets).connectDb();
+                if (newCon != null) {
+                    System.out.println("数据库连接成功" + newCon.getMetaData());
+                } else {
+                    System.err.println("数据库连接失败，请求退回");
+                    out.writeUTF("数据库发生错误，请联系系统管理员");
+                    continue;
+                }
+
+                // 传入解析器，功能对象，数据库连接，数据表
+                String result = (String) FUNC.get(parseMachine.getRegFunc().toUpperCase()).invoke(Functions.getMe(),
+                        parseMachine, newCon, "Users");
+                if (result != null) {
+                    System.out.println("请求指定操作成功");
+                } else {
+                    System.err.println("请求指定操作失败，请求已退回");
+                    out.writeUTF("请求拒绝");
+                    continue;
+                }
+
+                // 返回数据
+                out.writeUTF(result);
+                System.out.println("数据返回成功");
+                newCon.close();
+            } catch (IOException e) {
+                System.err.println("用户" + clientAddress + "断开连接");
+                ServerApp.decConnect();
+                break;
+            } catch (SQLException e) {
+                System.err.println("数据库访问异常");
+                e.printStackTrace();
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                System.err.println("未找到请求对应方法，请查看相关代码");
+                e.printStackTrace();
+            }
         }
     }
 }

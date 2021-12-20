@@ -1,6 +1,5 @@
 package com.royenheart.server.optDatabase;
 
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -10,27 +9,16 @@ import java.util.LinkedList;
  * @author RoyenHeart
  */
 abstract public class DatabaseSelect extends DatabaseOperations {
-    protected String database;
-    /*判断条件*/
+    protected String tables;
+    /** 判断条件 */
     protected HashMap<String, String> keyValue;
-    /*所需的信息*/
+    /** 所需的信息 */
     protected LinkedList<String> fields;
 
-    public DatabaseSelect(Connection con, String database) {
-        super(con);
-        this.database = database;
-    }
-
-    public void addKeyValue(String key, String value) {
-        keyValue.put(key, value);
-    }
-
-    public void addFields(String key) {
-        fields.add(key);
-    }
+    public DatabaseSelect() {}
 
     protected String getSql() {
-        StringBuffer sql = new StringBuffer("SELECT ");
+        StringBuilder sql = new StringBuilder("SELECT ");
 
         Iterator<String> iteratorW = fields.iterator();
         while (iteratorW.hasNext()) {
@@ -40,7 +28,7 @@ abstract public class DatabaseSelect extends DatabaseOperations {
             }
         }
 
-        sql.append(" FROM ").append(database).append(" where ");
+        sql.append(" FROM ").append(tables).append(" where ");
 
         Iterator<String> iteratorF = keyValue.keySet().iterator();
         while (iteratorF.hasNext()) {

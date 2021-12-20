@@ -11,7 +11,7 @@ import java.util.HashMap;
 abstract public class DatabaseOperations {
 
     protected Connection con;
-    /*各字段在数据库中的映射（考虑单独分出来放至settings.json中）*/
+    /** 各字段在数据库中的映射（考虑单独分出来放至settings.json中） */
     public static HashMap<String, Integer> fieldMap = new HashMap<>();
 
     static {
@@ -28,15 +28,6 @@ abstract public class DatabaseOperations {
         fieldMap.put("heir", 11);
     }
 
-    public DatabaseOperations(Connection con) {
-        this.con = con;
-    }
-
-    /**
-     * 转化数据库查询到的信息为以逗号和换行符号类型的字符串
-     * @param rs 数据库查询
-     * @return 转换信息后的字符串（字符串仍需进一步的转换）
-     */
-    abstract String returnData(ResultSet rs);
+    public DatabaseOperations() {}
 
 }

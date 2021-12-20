@@ -4,32 +4,26 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 
+/**
+ * 删除用户
+ * @author RoyenHeart
+ */
 public class DatabaseDelUser extends DatabaseDelete {
 
-    public DatabaseDelUser(Connection con, String database) {
-        super(con, database);
-    }
+    public DatabaseDelUser() {}
 
-    synchronized public String executeSql() throws SQLException {
+    synchronized public boolean executeSql(Connection con, String tables, HashMap<String, String> keyValue)
+            throws SQLException {
+        this.con = con;
+        this.tables = tables;
+        this.keyValue = keyValue;
+
         Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery(getSql());
-        String data = returnData(rs);
+        int success = stmt.executeUpdate(getSql());
         stmt.close();
-        return data;
+        return (success >= 1)?Boolean.TRUE:Boolean.FALSE;
     }
 
-    @Override
-    String returnData(ResultSet rs) {
-        String result;
-        try {
-            result = rs.toString();
-            rs.close();
-        } catch (SQLException e) {
-            System.err.println("发生错误，数据库连接异常" + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-        return result;
-    }
 }

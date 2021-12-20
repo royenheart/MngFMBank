@@ -17,7 +17,7 @@ public class CalculateApi {
      * @return 间隔年份
      */
     public static int dateInterval(Date s, Date t) {
-        int interval = 0;
+        int interval;
         int isReversed = 1;
 
         if (s.after(t)) {
@@ -60,11 +60,7 @@ public class CalculateApi {
      * @return 年龄是否符合要求
      */
     public static boolean legalAge(int age) {
-        if (age > User.MAX_AGE || age < User.MIN_AGE) {
-            return false;
-        } else {
-            return true;
-        }
+        return age <= User.MAX_AGE && age >= User.MIN_AGE;
     }
 
     /**
@@ -81,7 +77,8 @@ public class CalculateApi {
                     return false;
                 }
             }
-            return true;
+            // 名字不得出现空白字符
+            return name.matches("[^\f\n\r\t]+");
         }
     }
 
@@ -91,7 +88,7 @@ public class CalculateApi {
      * @return 钱数是否符合要求
      */
     public static boolean legalMoney(double money) {
-        return !(money < User.MIN_MONEY) && !(money > User.MAX_MONEY);
+        return (money >= User.MIN_MONEY) && (money <= User.MAX_MONEY);
     }
 
     /**
@@ -131,7 +128,8 @@ public class CalculateApi {
                     return false;
                 }
             }
-            return true;
+            // 密码不得出现空白字符
+            return passwd.matches("[^\f\n\r\t]+");
         }
     }
 

@@ -27,6 +27,7 @@ public class BasicSets {
             System.out.println("Now insert the new port you want to open your server");
             server.setIp(in.nextLine());
         }
+
         System.out.println("The Server port is " + server.getPort());
         System.out.println("Want to change it?(y/n)");
         tmp = in.nextLine();

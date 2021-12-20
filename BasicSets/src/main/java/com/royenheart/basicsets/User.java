@@ -32,19 +32,19 @@ public class User implements Cloneable {
     // Attributes
 
     private int age;
-    private char sex;
+    private final char sex;
     private String name;
     private String password;
     private String phone;
     private double money;
     private boolean death;
-    private Date birth;
-    private String personalId;
-    private String accountId;
-    private User heir;
+    private final Date birth;
+    private final String personalId;
+    private final String accountId;
+    private String heir;
 
     public User(int age, char sex, String name, String password, String phone,
-                double money, boolean death, Date birth, String personalId, User heir) {
+                double money, boolean death, Date birth, String personalId, String accountId, User heir) {
         this.age = age;
         this.sex = sex;
         this.name = name;
@@ -54,11 +54,12 @@ public class User implements Cloneable {
         this.death = death;
         this.birth = birth;
         this.personalId = personalId;
-        this.heir = heir;
+        this.accountId = accountId;
+        this.heir = heir.getAccountId();
     }
 
     public User(int age, char sex, String name, String password, String phone,
-                double money, boolean death, String birth, String personalId, User heir) throws ParseException {
+                double money, boolean death, String birth, String personalId, String accountId,String heir) throws ParseException {
         this.age = age;
         this.sex = sex;
         this.name = name;
@@ -69,6 +70,22 @@ public class User implements Cloneable {
         this.birth = TIME_FORMAT.parse(birth);
         this.personalId = personalId;
         this.heir = heir;
+        this.accountId = accountId;
+    }
+
+    public User(String age, String sex, String name, String password, String phone,
+                String money, String death, String birth, String personalId, String accountId, String heir) throws ParseException {
+        this.age = Integer.parseInt(age);
+        this.sex = "F".equalsIgnoreCase(sex)?'F':'M';
+        this.name = name;
+        this.password = password;
+        this.phone = phone;
+        this.money = Double.parseDouble(money);
+        this.death = Boolean.parseBoolean(death);
+        this.birth = TIME_FORMAT.parse(birth);
+        this.personalId = personalId;
+        this.heir = heir;
+        this.accountId = accountId;
     }
 
     public int getAge() {
@@ -111,8 +128,8 @@ public class User implements Cloneable {
         return death;
     }
 
-    public User getHeir() {
-        return heir.clone();
+    public String getHeir() {
+        return heir;
     }
 
     public void setPassword(String password) { this.password = password; }

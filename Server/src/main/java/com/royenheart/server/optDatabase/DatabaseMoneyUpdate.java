@@ -4,32 +4,29 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.LinkedList;
 
+/**
+ * 更新账户余额
+ * @author RoyenHeart
+ */
 public class DatabaseMoneyUpdate extends DataBaseUpdate {
 
-    public DatabaseMoneyUpdate(Connection con, String database, String field, String fieldValue) {
-        super(con, database, field, fieldValue);
-    }
+    public DatabaseMoneyUpdate() {}
 
-    synchronized public String executeSql() throws SQLException {
+    synchronized public boolean executeSql(Connection con, String tables, HashMap<String, String> fieldWithValue,
+                                           HashMap<String, String> keyValue)
+            throws SQLException {
+        this.con = con;
+        this.tables = tables;
+        this.fieldWithValue = fieldWithValue;
+        this.keyValue = keyValue;
+
         Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery(getSql());
-        String data = returnData(rs);
+        int success = stmt.executeUpdate(getSql());
         stmt.close();
-        return data;
+        return (success >= 1)?Boolean.TRUE:Boolean.FALSE;
     }
 
-    @Override
-    String returnData(ResultSet rs) {
-        String result;
-        try {
-            result = rs.toString();
-            rs.close();
-        } catch (SQLException e) {
-            System.err.println("发生错误，数据库连接异常" + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-        return result;
-    }
 }

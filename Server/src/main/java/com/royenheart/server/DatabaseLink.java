@@ -24,18 +24,24 @@ public class DatabaseLink {
      */
     public Connection connectDb() {
         // 地址拓展url设置
-        String pattern = "test_demo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        String url = String.format("jdbc:mysql://%s:%s/%s", database.getIp(), database.getPort(), pattern);
+        String pattern = database.getDatabase() + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+        String url = String.format("jdbc:mysql://%s:%s/%s", database.getDatabaseIp(),
+                database.getDatabasePort(), pattern);
         Connection conn;
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(url, database.getDatabaseUser(), database.getDatabasePasswd());
-        } catch (ClassNotFoundException | SQLException e) {
-            System.out.println("发生错误"+e.getMessage());
+        } catch (SQLException e) {
+            System.err.printf("数据连接发生错误\n%s", e.getMessage());
+            e.printStackTrace();
+            return null;
+        } catch (ClassNotFoundException e) {
+            System.err.println("Mysql数据库驱动加载错误，请检查驱动是否已经安装");
             e.printStackTrace();
             return null;
         }
+
         return conn;
     }
 

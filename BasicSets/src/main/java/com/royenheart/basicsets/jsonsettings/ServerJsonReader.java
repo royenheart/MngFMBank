@@ -28,7 +28,8 @@ public class ServerJsonReader extends JsonReader {
             syntax = false;
             e.printStackTrace();
         }
-        return (syntax)?serverSets:(serverSets = new Server("127.0.0.1", "9999", "default", "database", "123456"));
+        return (syntax)?serverSets:(serverSets = new Server("127.0.0.1", "9999", "default", "database",
+                "123456", "localhost", "3306"));
     }
 
     @Override

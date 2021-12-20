@@ -10,6 +10,8 @@ abstract public class JsonReader {
 
     /**
      * Json文件读入并返回对应对象
+     * @return 读入并生成的对象
+     * @throws IOException 文件读入IO错误
      */
     public abstract boolean initial() throws IOException;
 

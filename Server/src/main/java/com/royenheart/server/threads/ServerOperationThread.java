@@ -36,11 +36,10 @@ public class ServerOperationThread extends ServerThread implements Runnable {
     private DataOutputStream out;
     private DataInputStream in;
     private final InetAddress clientAddress;
-    private final Server serverSets;
     private boolean login;
 
     public ServerOperationThread(Socket socket, Server serverSets) {
-        this.serverSets = serverSets;
+        super(socket, serverSets);
         clientAddress = socket.getInetAddress();
         login = false;
         try {
@@ -54,9 +53,10 @@ public class ServerOperationThread extends ServerThread implements Runnable {
 
     @Override
     public void run() {
+        // 客户端请求
         String request;
 
-        while (true) {
+        while (!ServerApp.getShutdown()) {
             try {
                 // 不断接收请求，每一个请求进行操作
                 request = in.readUTF();

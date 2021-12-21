@@ -3,7 +3,7 @@ package com.royenheart.server;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.royenheart.basicsets.User;
-import com.royenheart.server.optDatabase.*;
+import com.royenheart.server.databaseopt.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;

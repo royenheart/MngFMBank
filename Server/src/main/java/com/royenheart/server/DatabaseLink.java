@@ -12,7 +12,7 @@ import java.sql.SQLException;
  */
 public class DatabaseLink {
 
-    private Server database;
+    private final Server database;
 
     public DatabaseLink(Server database) {
         this.database = database;

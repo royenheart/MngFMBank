@@ -1,11 +1,9 @@
-package com.royenheart.server.optDatabase;
+package com.royenheart.server.databaseopt;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 /**
  * 用户信息更新

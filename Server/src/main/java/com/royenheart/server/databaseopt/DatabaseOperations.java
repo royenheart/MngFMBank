@@ -1,7 +1,6 @@
-package com.royenheart.server.optDatabase;
+package com.royenheart.server.databaseopt;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.util.HashMap;
 
 /**

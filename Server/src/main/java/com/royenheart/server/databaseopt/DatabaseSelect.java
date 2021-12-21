@@ -1,4 +1,4 @@
-package com.royenheart.server.optDatabase;
+package com.royenheart.server.databaseopt;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -3,9 +3,10 @@ package com.royenheart.server;
 import com.royenheart.basicsets.Planet;
 import com.royenheart.basicsets.Server;
 import com.royenheart.basicsets.jsonsettings.PlanetJsonReader;
+import com.royenheart.basicsets.jsonsettings.PlanetJsonWriter;
 import com.royenheart.basicsets.jsonsettings.ServerJsonReader;
-import com.royenheart.server.threads.NamedThreadFactory;
-import com.royenheart.server.threads.ServerOperationThread;
+import com.royenheart.basicsets.jsonsettings.ServerJsonWriter;
+import com.royenheart.server.threads.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -25,31 +26,65 @@ import java.util.concurrent.*;
  */
 public class ServerApp {
 
-    private static int connectNumber;
+    private static int connectNumber = 0;
+    private static boolean shutdown = false;
 
+    public static int getConnectNumber() {
+        return connectNumber;
+    }
     public static void decConnect() {
         connectNumber -= 1;
     }
+    public static void plusConnect() { connectNumber += 1; }
 
-    public static void main(String[] args) {
-        connectNumber = 0;
-        ServerSocket server = null;
-        Socket client = null;
+    /**
+     * 为OPERATIONS线程池分配线程任务
+     * @param client 客户端socket连接
+     * @param serverSets 服务端设置
+     */
+    public static void executorOperationsSubmit(Socket client, Server serverSets) {
+        OPERATIONS.submit(new ServerOperationThread(client, serverSets));
+    }
 
+    private static final ExecutorService OPERATIONS;
+    private static final ExecutorService MAIL_SYS;
+    private static final ScheduledExecutorService TIMER;
+    private static final ExecutorService LISTEN_CMD;
+    private static final ExecutorService LISTEN_CONNECT;
+    private static final ScheduledExecutorService JUDGE_QUIT;
+
+    static {
         // 创建用于处理客户端发送的请求线程池
-        ExecutorService operations = new
+        OPERATIONS = new
                 ThreadPoolExecutor(0, 40, 60L,
                 TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
                 new NamedThreadFactory("ClientOperationsRequest"));
         // 创建邮件系统有关的线程池
-        ExecutorService mailSys = new
+        MAIL_SYS = new
                 ThreadPoolExecutor(0, 40, 60L,
                 TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
                 new NamedThreadFactory("MailSystemRequest"));
         // 创建定时任务，负责星球时间的统计，并定时执行星球数据的刷新
-        ScheduledExecutorService timer = Executors.newScheduledThreadPool(2);
+        TIMER = Executors.newScheduledThreadPool(2);
+        // 创建服务端命令监听线程池
+        LISTEN_CMD = Executors.newFixedThreadPool(1);
+        // 创建服务端请求接收线程池
+        LISTEN_CONNECT = Executors.newFixedThreadPool(1);
+        // 定时任务，用于持续监听是否发送服务端退出命令
+        JUDGE_QUIT = Executors.newScheduledThreadPool(1);
+    }
+
+
+    /**
+     * 供线程查看服务端是否处于关闭状态
+     * @return 是否处于关闭状态
+     */
+    public static boolean getShutdown() { return shutdown; }
+
+    public static void main(String[] args) {
+        ServerSocket server = null;
 
         // 从设置文件内读入设置
         Server serverSets = new ServerJsonReader().getServerFromSets();
@@ -64,20 +99,54 @@ public class ServerApp {
             System.exit(-1);
         }
 
-        while (true) {
-            try {
-                System.out.println("当前连接数" + connectNumber + "，正在" + serverSets.getPort() + "端口进行监听");
-                client = server.accept();
-                System.out.println("用户" + client.getInetAddress() + "请求连接");
-            } catch (IOException e) {
-                System.err.println("用户连接异常，已中断");
-                e.printStackTrace();
-            }
-            if (client != null) {
-                connectNumber += 1;
-                operations.submit(new ServerOperationThread(client, serverSets));
-            }
-        }
+        // 监听命令
+        LISTEN_CMD.submit(new ServerCmdThread());
+        LISTEN_CMD.shutdown();
+
+        // 添加请求监听线程
+        LISTEN_CONNECT.submit(new ServerRequestThread(server, serverSets));
+
+        // 持续监听端口，处理请求的连接
+        JUDGE_QUIT.scheduleAtFixedRate(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        if (LISTEN_CMD.isTerminated()) {
+                            OPERATIONS.shutdown();
+                            MAIL_SYS.shutdown();
+                            TIMER.shutdown();
+                            // 强制关闭请求接收线程，请求接收线程需对中断错误进行处理
+                            LISTEN_CONNECT.shutdownNow();
+                            System.out.println("服务端退出中，正在关闭所有线程");
+                            shutdown = true;
+                            try {
+                                if (OPERATIONS.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS) &&
+                                        MAIL_SYS.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS) &&
+                                        TIMER.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS)) {
+                                    System.out.println("线程执行完毕，服务端执行关闭");
+
+                                    // 命令监听线程死亡，退出监听，进行资源保存（服务器，星球settings文件保存）
+                                    System.out.println("正在保存资源，请勿退出");
+                                    ServerJsonWriter storeServer = new ServerJsonWriter();
+                                    boolean store1 = storeServer.store(serverSets);
+                                    PlanetJsonWriter storePlanet = new PlanetJsonWriter();
+                                    boolean store2 = storePlanet.store(planetSets);
+
+                                    if (store1 && store2) {
+                                        System.out.println("资源保存成功，服务端关闭");
+                                        System.exit(0);
+                                    } else {
+                                        System.err.println("资源保存失败，服务端未正常关闭，请检查设置文件完整性");
+                                    }
+                                }
+                            } catch (InterruptedException e) {
+                                System.err.println("服务端意外关闭，线程未正常关闭，请检查服务端资源完整性");
+                                e.printStackTrace();
+                                System.exit(-1);
+                            }
+                        }
+                    }
+                }, 1, 1, TimeUnit.SECONDS);
     }
 
 }

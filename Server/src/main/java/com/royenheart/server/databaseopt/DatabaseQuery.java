@@ -1,4 +1,4 @@
-package com.royenheart.server.optDatabase;
+package com.royenheart.server.databaseopt;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

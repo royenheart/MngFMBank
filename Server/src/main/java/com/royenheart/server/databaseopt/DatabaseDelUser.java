@@ -1,26 +1,22 @@
-package com.royenheart.server.optDatabase;
+package com.royenheart.server.databaseopt;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 /**
- * 更新账户余额
+ * 删除用户
  * @author RoyenHeart
  */
-public class DatabaseMoneyUpdate extends DataBaseUpdate {
+public class DatabaseDelUser extends DatabaseDelete {
 
-    public DatabaseMoneyUpdate() {}
+    public DatabaseDelUser() {}
 
-    synchronized public boolean executeSql(Connection con, String tables, HashMap<String, String> fieldWithValue,
-                                           HashMap<String, String> keyValue)
+    synchronized public boolean executeSql(Connection con, String tables, HashMap<String, String> keyValue)
             throws SQLException {
         this.con = con;
         this.tables = tables;
-        this.fieldWithValue = fieldWithValue;
         this.keyValue = keyValue;
 
         Statement stmt = con.createStatement();

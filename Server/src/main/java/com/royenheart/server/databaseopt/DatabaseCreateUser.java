@@ -1,4 +1,4 @@
-package com.royenheart.server.optDatabase;
+package com.royenheart.server.databaseopt;
 
 import com.royenheart.basicsets.User;
 

@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 线程池命名线程工厂(更易于区分)
+ * 线程池命名线程工厂（用于区分业务）
  * @author RoyenHeart
  */
 public class NamedThreadFactory implements ThreadFactory {
@@ -20,6 +20,11 @@ public class NamedThreadFactory implements ThreadFactory {
         threadsGrp = (s != null)?s.getThreadGroup():Thread.currentThread().getThreadGroup();
     }
 
+    /**
+     * 当新任务被提交时，根据原子线程数量分配线程ID
+     * @param r 新的任务（线程）
+     * @return 工厂方法，将线程加工后（分配ID）返回给线程池
+     */
     @Override
     public Thread newThread(Runnable r) {
         Thread namedT = new Thread(threadsGrp, r, this.poolName + threadNumber.getAndIncrement(), 0);

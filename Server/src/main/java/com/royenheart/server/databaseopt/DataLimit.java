@@ -1,9 +1,10 @@
-package com.royenheart.server.optDatabase;
+package com.royenheart.server.databaseopt;
 
 import java.sql.ResultSet;
 
 /**
  * 数据库操作返回数据约束
+ * @author RoyenHeart
  */
 public interface DataLimit {
 

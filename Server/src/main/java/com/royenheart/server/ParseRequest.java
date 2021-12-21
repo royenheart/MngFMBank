@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 解析请求
+ * 解析客户端请求
  * @author RoyenHeart
  */
 public class ParseRequest {
@@ -18,9 +18,6 @@ public class ParseRequest {
      * 提取请求前段表示功能的字符串
      */
     private static final String REG_FUNC = "^[a-zA-Z]+(?=%)";
-    /**
-     * 匹配名字
-     */
     private static final String REG_NAME = "name:[^;\\f\\n\\rt\\t]+;";
     private static final String REG_AGE = "age:[0-9]+;";
     private static final String REG_SEX_BOOLEAN = "(sex:true;)|(sex:false;)";
@@ -166,6 +163,15 @@ public class ParseRequest {
         }
     }
 
+    /**
+     * 获取字段-值键值对中的值
+     * <p>
+     *     先获取键值对，再获取值
+     * </p>
+     * @param reg 正则匹配式
+     * @param name 字段名称
+     * @return 返回匹配到的值
+     */
     private String getRegV(String reg, String name) {
         String keyV = getReg(reg, name);
 
@@ -183,6 +189,14 @@ public class ParseRequest {
         }
     }
 
+    /**
+     * 获取键值对中的值
+     * <p>
+     *     传入键值对字符串，直接获取值
+     * </p>
+     * @param str 键值对字符串
+     * @return 返回匹配到的值
+     */
     private String getRegV(String str) {
         Pattern r = Pattern.compile(REG_VALUE, Pattern.CASE_INSENSITIVE);
         Matcher m = r.matcher(str);

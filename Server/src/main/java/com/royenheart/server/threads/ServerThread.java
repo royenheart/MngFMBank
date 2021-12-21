@@ -1,9 +1,12 @@
 package com.royenheart.server.threads;
 
+import com.royenheart.basicsets.Server;
 import com.royenheart.server.Functions;
 import com.royenheart.server.ParseRequest;
+import com.royenheart.server.ServerApp;
 
 import java.lang.reflect.Method;
+import java.net.Socket;
 import java.sql.Connection;
 import java.util.HashMap;
 
@@ -13,7 +16,20 @@ import java.util.HashMap;
  */
 abstract public class ServerThread {
 
+    /**
+     * 请求-功能对应键值对
+     */
     protected static final HashMap<String, Method> FUNC =  new HashMap<>();
+
+    protected Socket socket;
+    protected Server serverSets;
+
+    public ServerThread(Socket socket, Server serverSets) {
+        this.socket = socket;
+        this.serverSets = serverSets;
+    }
+
+    public ServerThread() {}
 
     static {
         try {

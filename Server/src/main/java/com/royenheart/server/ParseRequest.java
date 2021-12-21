@@ -33,6 +33,7 @@ public class ParseRequest {
     private static final String REG_ACCOUNTID = "accountId:[0-9]{10};";
     private static final String REG_PERSONALID = "personalId:[0-9]{12};";
     private static final String REG_HEIR = "heir:[0-9]{10};";
+    private static final String REG_TABLE = "table:[^;\\f\\n\\rt\\t]+;";
     private static final String REG_VALUE = "(?<=:).*(?=;)";
 
     private final boolean legal;
@@ -60,6 +61,14 @@ public class ParseRequest {
      */
     public boolean getLegal() {
         return legal;
+    }
+
+    /**
+     * 获取请求中指定的数据表
+     * @return 返回请求的数据表
+     */
+    public String getRegTable() {
+        return getRegV(REG_TABLE, "table");
     }
 
     public String getRegName() {

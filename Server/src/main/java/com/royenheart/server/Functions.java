@@ -47,7 +47,11 @@ public class Functions {
      * @param con 数据库连接
      * @return 结果字符串，以Json或者普通字符串格式发送
      */
-    synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (!login) {
+            return "您尚未登录!";
+        }
+
         try {
             if (parseRequest.getRegAccountId() == null) {
                 System.err.println("accountId字段不存在");
@@ -78,7 +82,11 @@ public class Functions {
      * @param tables 数据表
      * @return 取钱数据
      */
-    synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (!login) {
+            return "您尚未登录!";
+        }
+
         try {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
@@ -130,7 +138,11 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (!login) {
+            return "您尚未登录!";
+        }
+
         try {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
@@ -182,7 +194,11 @@ public class Functions {
      * @param tables 数据表
      * @return 数据库查询信息
      */
-    synchronized public String transferMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String transferMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (!login) {
+            return "您尚未登录!";
+        }
+
         LinkedList<String> mulAccountId = parseRequest.getRegMulAccountId();
         if (mulAccountId == null || mulAccountId.size() != 2) {
             System.err.println("转账所需accountid字段不等于2个");
@@ -267,7 +283,11 @@ public class Functions {
      * @param tables 数据表
      * @return 记录更新信息
      */
-    synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (!login) {
+            return "您尚未登录!";
+        }
+
         try {
             if (parseRequest.getRegAccountId() == null && (parseRequest.getRegMoney() == null ||
                     parseRequest.getRegAge() == null || parseRequest.getRegSexString() == null ||
@@ -311,7 +331,11 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String addUser(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String addUser(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (!login) {
+            return "您尚未登录!";
+        }
+
         try {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null ||
                     parseRequest.getRegAge() == null || parseRequest.getRegSexString() == null ||
@@ -377,7 +401,11 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (!login) {
+            return "您尚未登录!";
+        }
+
         if (parseRequest.getRegAccountId() == null) {
             System.err.println("未指定删除用户");
             return "未指定删除用户";
@@ -394,6 +422,53 @@ public class Functions {
                 return "用户删除成功";
             } else {
                 return "删除失败，请检查";
+            }
+        } catch (SQLException e) {
+            System.err.println("数据库请求失败");
+            e.printStackTrace();
+            return "数据库请求失败";
+        }
+    }
+
+    /**
+     * 用户登录，分普通用户登录和管理员用户登录，需要先使用请求解析引擎确定使用哪个数据表
+     * @param parseRequest 客户端请求解析器
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @return 返回登录的信息，之后对应线程的登录状态设置为真
+     */
+    synchronized public String login(ParseRequest parseRequest, Connection con, String tables, boolean login) {
+        if (login) {
+            return "请勿重复登录";
+        }
+
+        if (parseRequest.getRegTable() != null) {
+            tables = parseRequest.getRegTable();
+        } else if (parseRequest.getRegAccountId() == null || parseRequest.getRegPasswd() == null) {
+            System.err.println("用户名或者密码字段缺失");
+            return "用户名或者密码缺失，请检查表单";
+        }
+
+        Gson gson = new Gson();
+
+        try {
+            DatabaseQuery o1 = (DatabaseQuery) OPERATIONS.get("q");
+            String r1 = o1.executeSql(con, tables, new LinkedList<String>(){
+                {
+                    this.add("password");
+                }
+            }, new HashMap<String, String>(){
+                {
+                    this.put("accountId", parseRequest.getRegAccountId());
+                }
+            });
+            LinkedList<HashMap<String, String>> query = gson.fromJson(r1, new TypeToken<LinkedList<HashMap<String, String>>>(){}.getType());
+            String databasePasswd = query.getFirst().get("password");
+
+            if (databasePasswd.equals(parseRequest.getRegPasswd())) {
+                return "true";
+            } else {
+                return "false";
             }
         } catch (SQLException e) {
             System.err.println("数据库请求失败");

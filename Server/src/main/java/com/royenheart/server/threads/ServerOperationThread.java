@@ -10,12 +10,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 
 /**
  * 普通操作线程
@@ -39,10 +37,12 @@ public class ServerOperationThread extends ServerThread implements Runnable {
     private DataInputStream in;
     private final InetAddress clientAddress;
     private final Server serverSets;
+    private boolean login;
 
     public ServerOperationThread(Socket socket, Server serverSets) {
         this.serverSets = serverSets;
         clientAddress = socket.getInetAddress();
+        login = false;
         try {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
@@ -84,13 +84,16 @@ public class ServerOperationThread extends ServerThread implements Runnable {
 
                 // 传入解析器，功能对象，数据库连接，数据表
                 String result = (String) FUNC.get(parseMachine.getRegFunc().toUpperCase()).invoke(Functions.getMe(),
-                        parseMachine, newCon, "Users");
+                        parseMachine, newCon, "Users", this.login);
                 if (result != null) {
                     System.out.println("请求指定操作成功");
                 } else {
                     System.err.println("请求指定操作失败，请求已退回");
                     out.writeUTF("请求拒绝");
                     continue;
+                }
+                if (Boolean.parseBoolean(result) && !login) {
+                    login = true;
                 }
 
                 // 返回数据

@@ -2,7 +2,7 @@ package com.royenheart.basicsets.jsonsettings;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.royenheart.basicsets.Server;
+import com.royenheart.basicsets.programsettings.Server;
 
 import java.io.File;
 import java.io.IOException;

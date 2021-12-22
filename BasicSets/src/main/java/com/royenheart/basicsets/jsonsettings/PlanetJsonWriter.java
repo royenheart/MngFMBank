@@ -2,7 +2,7 @@ package com.royenheart.basicsets.jsonsettings;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.royenheart.basicsets.Planet;
+import com.royenheart.basicsets.programsettings.Planet;
 
 import java.io.File;
 import java.io.IOException;

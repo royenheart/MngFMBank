@@ -1,5 +1,7 @@
 package com.royenheart.basicsets;
 
+import com.royenheart.basicsets.programsettings.User;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -11,6 +13,9 @@ public class CalculateApi {
 
     /**
      * 计算起始日期和终止日期的间隔年份
+     * <p>
+     *     服务器更新每个人年龄数据时，起始日期为生日，终止日期为星球当前时间
+     * </p>
      * @author RoyenHeart
      * @param s 起始时间
      * @param t 终止时间

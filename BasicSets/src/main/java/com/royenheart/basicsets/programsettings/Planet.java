@@ -1,16 +1,16 @@
-package com.royenheart.basicsets;
+package com.royenheart.basicsets.programsettings;
 
 import com.google.gson.annotations.Expose;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * 飞马星球类
+ * 飞马星球类，包括行星数据等，作为服务器数据更新的依据之一
  * <p>
  *     银行信息、战争数量、经济增速、泡沫经济、人民存储款意愿、投资热度
  * </p>
+ * @author RoyenHeart
  */
 public class Planet {
 
@@ -41,10 +41,11 @@ public class Planet {
     private double bankWill;
     @Expose
     private double investFire;
+    private Date planetTimeDate;
     @Expose
-    private Date planetTime;
+    private String planetTime;
 
-    public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, Date planetTime) {
+    public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, String planetTime) {
         this.wars = wars;
         this.ecoRate = ecoRate;
         this.ecoBubble = ecoBubble;
@@ -53,19 +54,13 @@ public class Planet {
         this.planetTime = planetTime;
     }
 
-    public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, String planetTime) {
+    public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, Date planetTimeDate) {
         this.wars = wars;
         this.ecoRate = ecoRate;
         this.ecoBubble = ecoBubble;
         this.bankWill = bankWill;
         this.investFire = investFire;
-        try {
-            this.planetTime = new SimpleDateFormat("yyyy-MM-dd").parse(planetTime);
-        } catch (ParseException e) {
-            System.out.println(planetTime + "日期解析错误");
-            e.printStackTrace();
-            this.planetTime = new Date();
-        }
+        this.planetTime = new SimpleDateFormat("yyyy-MM-dd").format(planetTimeDate);
     }
 
     public int getWars() {
@@ -88,8 +83,12 @@ public class Planet {
         return investFire;
     }
 
-    public Date getPlanetTime() {
+    public String getPlanetTime() {
         return planetTime;
+    }
+
+    public Date getPlanetTimeDate() {
+        return planetTimeDate;
     }
 
     public void setWars(int wars) {
@@ -112,7 +111,11 @@ public class Planet {
         this.investFire = investFire;
     }
 
-    public void setPlanetTime(Date planetTime) {
+    public void setPlanetTime(String planetTime) {
         this.planetTime = planetTime;
+    }
+
+    public void setPlanetTimeDate(Date planetTimeDate) {
+        this.planetTimeDate = planetTimeDate;
     }
 }

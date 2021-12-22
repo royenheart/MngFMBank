@@ -1,6 +1,6 @@
 package com.royenheart.server.threads;
 
-import com.royenheart.basicsets.Server;
+import com.royenheart.basicsets.programsettings.Server;
 import com.royenheart.server.ServerApp;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class ServerRequestThread implements Runnable {
 
     @Override
     public void run() {
-        while (!ServerApp.getShutdown()) {
+        while (ServerApp.getShutdown()) {
             Socket client = null;
 
             // 获取连接

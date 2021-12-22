@@ -1,7 +1,7 @@
 package com.royenheart.server;
 
-import com.royenheart.basicsets.Planet;
-import com.royenheart.basicsets.Server;
+import com.royenheart.basicsets.programsettings.Planet;
+import com.royenheart.basicsets.programsettings.Server;
 import com.royenheart.basicsets.jsonsettings.PlanetJsonReader;
 import com.royenheart.basicsets.jsonsettings.PlanetJsonWriter;
 import com.royenheart.basicsets.jsonsettings.ServerJsonReader;
@@ -67,7 +67,7 @@ public class ServerApp {
                 new SynchronousQueue<>(),
                 new NamedThreadFactory("MailSystemRequest"));
         // 创建定时任务，负责星球时间的统计，并定时执行星球数据的刷新
-        TIMER = Executors.newScheduledThreadPool(2);
+        TIMER = Executors.newScheduledThreadPool(1);
         // 创建服务端命令监听线程池
         LISTEN_CMD = Executors.newFixedThreadPool(1);
         // 创建服务端请求接收线程池
@@ -76,12 +76,11 @@ public class ServerApp {
         JUDGE_QUIT = Executors.newScheduledThreadPool(1);
     }
 
-
     /**
      * 供线程查看服务端是否处于关闭状态
-     * @return 是否处于关闭状态
+     * @return 是否未处于关闭状态
      */
-    public static boolean getShutdown() { return shutdown; }
+    public static boolean getShutdown() { return !shutdown; }
 
     public static void main(String[] args) {
         ServerSocket server = null;
@@ -105,6 +104,9 @@ public class ServerApp {
 
         // 添加请求监听线程
         LISTEN_CONNECT.submit(new ServerRequestThread(server, serverSets));
+
+        // 添加星球时间（每24分钟，即一分钟对应1小时进行星球时间的刷新，相当于1天）
+        TIMER.scheduleAtFixedRate(new ServerTimeThread(), 0, 12, TimeUnit.MINUTES);
 
         // 持续监听端口，处理请求的连接
         JUDGE_QUIT.scheduleAtFixedRate(

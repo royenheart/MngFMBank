@@ -1,9 +1,7 @@
 package com.royenheart.server;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.royenheart.basicsets.User;
-import com.royenheart.server.databaseopt.*;
+import com.royenheart.basicsets.programsettings.User;
+import com.royenheart.server.atomics.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,24 +16,10 @@ import java.util.NoSuchElementException;
  */
 public class Functions {
 
+    // 使用单例设计模式
+
     private static final Functions ME = new Functions();
     private Functions() {}
-
-    /**
-     * 操作列表
-     */
-    private static final HashMap<String, DatabaseOperations> OPERATIONS = new HashMap<>();
-
-    /*
-      批量添加原子操作
-    */
-    static {
-        OPERATIONS.put("cu", new DatabaseCreateUser());
-        OPERATIONS.put("du", new DatabaseDelUser());
-        OPERATIONS.put("mu", new DatabaseMoneyUpdate());
-        OPERATIONS.put("q", new DatabaseQuery());
-        OPERATIONS.put("uu", new DatabaseUpdateUser());
-    }
 
     public static Functions getMe() {
         return ME;
@@ -58,16 +42,9 @@ public class Functions {
                 return "请求accountId字段不存在";
             }
 
-            DatabaseQuery o1 = (DatabaseQuery) OPERATIONS.get("q");
-            return o1.executeSql(con, tables, new LinkedList<String>(){
-                {
-                    this.add("money");
-                }
-            }, new HashMap<String, String>(){
-                {
-                    this.put("accountId", parseRequest.getRegAccountId());
-                }
-            });
+            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con,
+                    tables, parseRequest.getRegAccountId()).query();
+            return "当前余额:" + query.getFirst().get("money");
         } catch (SQLException e) {
             System.err.println("数据库请求失败");
             e.printStackTrace();
@@ -93,32 +70,16 @@ public class Functions {
                 return "accountId或money字段缺失";
             }
 
-            Gson gson = new Gson();
-
-            DatabaseQuery o1 = (DatabaseQuery) OPERATIONS.get("q");
-            String r1 = o1.executeSql(con, tables, new LinkedList<String>(){
-                {
-                    this.add("money");
-                }
-            }, new HashMap<String, String>(){
-                {
-                    this.put("accountId", parseRequest.getRegAccountId());
-                }
-            });
-            LinkedList<HashMap<String, String>> query = gson.fromJson(r1,
-                    new TypeToken<LinkedList<HashMap<String, String>>>(){}.getType());
+            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con,
+                    tables, parseRequest.getRegAccountId()).query();
             double currentMoney = Double.parseDouble(query.getFirst().get("money"));
             double fetchMoney = Double.parseDouble(parseRequest.getRegMoney());
             if (currentMoney < fetchMoney) {
                 return "当前余额: " + currentMoney + ",您没有这么多钱";
             }
 
-            DatabaseMoneyUpdate o2 = (DatabaseMoneyUpdate) OPERATIONS.get("mu");
-            boolean success = o2.executeSql(con, tables,
-                    new HashMap<String, String>(){{
-                        this.put("money", String.valueOf(currentMoney - fetchMoney));}},
-                    new HashMap<String, String>(){{
-                        this.put("accountId", parseRequest.getRegAccountId());}});
+            boolean success = new AtomicUpdateMoney(con, tables, parseRequest.getRegAccountId(),
+                    String.valueOf(currentMoney - fetchMoney)).update();
             if (success) {
                 return "取钱" + fetchMoney + "成功，当前余额" + (currentMoney - fetchMoney);
             } else {
@@ -149,32 +110,16 @@ public class Functions {
                 return "accountId或money字段缺失";
             }
 
-            Gson gson = new Gson();
-
-            DatabaseQuery o1 = (DatabaseQuery) OPERATIONS.get("q");
-            String r1 = o1.executeSql(con, tables, new LinkedList<String>(){
-                {
-                    this.add("money");
-                }
-            }, new HashMap<String, String>(){
-                {
-                    this.put("accountId", parseRequest.getRegAccountId());
-                }
-            });
-            LinkedList<HashMap<String, String>> query = gson.fromJson(r1,
-                    new TypeToken<LinkedList<HashMap<String, String>>>(){}.getType());
+            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con, tables,
+                    parseRequest.getRegAccountId()).query();
             double currentMoney = Double.parseDouble(query.getFirst().get("money"));
             double putMoney = Double.parseDouble(parseRequest.getRegMoney());
             if (currentMoney + putMoney > User.MAX_MONEY) {
                 return "存放后余额将为: " + (currentMoney + putMoney) + ",超出存放上限，请少存点";
             }
 
-            DatabaseMoneyUpdate o2 = (DatabaseMoneyUpdate) OPERATIONS.get("mu");
-            boolean success = o2.executeSql(con, tables,
-                    new HashMap<String, String>(){{
-                        this.put("money", String.valueOf(currentMoney + putMoney));}},
-                    new HashMap<String, String>(){{
-                        this.put("accountId", parseRequest.getRegAccountId());}});
+            boolean success = new AtomicUpdateMoney(con, tables, parseRequest.getRegAccountId()
+                    , String.valueOf(currentMoney + putMoney)).update();
             if (success) {
                 return "存钱" + putMoney + "成功，当前余额" + (currentMoney + putMoney);
             } else {
@@ -208,36 +153,14 @@ public class Functions {
             return "未指定钱数";
         }
 
-        Gson gson = new Gson();
-
         try {
             System.out.println("从用户" + mulAccountId.get(0) + "查询");
-            DatabaseQuery o1 = (DatabaseQuery) OPERATIONS.get("q");
-            String r1 = o1.executeSql(con, tables, new LinkedList<String>(){
-                {
-                    this.add("money");
-                }
-            }, new HashMap<String, String>(){
-                {
-                    this.put("accountId", mulAccountId.get(0));
-                }
-            });
-            LinkedList<HashMap<String, String>> query = gson.fromJson(r1,
-                    new TypeToken<LinkedList<HashMap<String, String>>>(){}.getType());
+            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con,
+                    tables, mulAccountId.get(0)).query();
             double outCurrentMoney = Double.parseDouble(query.getFirst().get("money"));
 
             System.out.println("从用户" + mulAccountId.get(1) + "查询");
-            DatabaseQuery o2 = (DatabaseQuery) OPERATIONS.get("q");
-            String r2 = o2.executeSql(con, tables, new LinkedList<String>(){
-                {
-                    this.add("money");
-                }
-            }, new HashMap<String, String>(){
-                {
-                    this.put("accountId", mulAccountId.get(1));
-                }
-            });
-            query = gson.fromJson(r2, new TypeToken<LinkedList<HashMap<String, String>>>(){}.getType());
+            query = new AtomicQueryMoney(con, tables, mulAccountId.get(1)).query();
             double inCurrentMoney = Double.parseDouble(query.getFirst().get("money"));
 
             double transferMoney = Double.parseDouble(parseRequest.getRegMoney());
@@ -246,19 +169,11 @@ public class Functions {
             } else if (transferMoney + inCurrentMoney > User.MAX_MONEY) {
                 return "转入人钱数将超出上线，请转少一点";
             } else {
-                DatabaseMoneyUpdate o3 = (DatabaseMoneyUpdate) OPERATIONS.get("mu");
-                boolean success1 = o3.executeSql(con, tables,
-                        new HashMap<String, String>(){{
-                            this.put("money", String.valueOf(outCurrentMoney - transferMoney));}},
-                        new HashMap<String, String>(){{
-                            this.put("accountId", mulAccountId.get(0));}});
+                boolean success1 = new AtomicUpdateMoney(con, tables, mulAccountId.get(0),
+                        String.valueOf(outCurrentMoney - transferMoney)).update();
 
-                DatabaseMoneyUpdate o4 = (DatabaseMoneyUpdate) OPERATIONS.get("mu");
-                boolean success2 = o4.executeSql(con, tables,
-                        new HashMap<String, String>(){{
-                            this.put("money", String.valueOf(inCurrentMoney + transferMoney));}},
-                        new HashMap<String, String>(){{
-                            this.put("accountId", mulAccountId.get(1));}});
+                boolean success2 = new AtomicUpdateMoney(con, tables, mulAccountId.get(1),
+                        String.valueOf(inCurrentMoney + transferMoney)).update();
 
                 boolean success = success1 && success2;
                 if (success) {
@@ -306,12 +221,8 @@ public class Functions {
             if (parseRequest.getRegDeath() != null) { updates.put("death", parseRequest.getRegDeath()); }
             if (parseRequest.getRegHeir() != null) { updates.put("heir", parseRequest.getRegHeir()); }
 
-            DatabaseUpdateUser o1 = (DatabaseUpdateUser) OPERATIONS.get("uu");
-            boolean success = o1.executeSql(con, tables, new HashMap<String, String>(){
-                {
-                    this.put("accountId", parseRequest.getRegAccountId());
-                }
-            }, updates);
+
+            boolean success = new AtomicUpdateUser(con, tables, parseRequest.getRegAccountId(), updates).update();
             if (success) {
                 return "用户信息修改成功";
             } else {
@@ -347,21 +258,9 @@ public class Functions {
                 return "请求字段缺失";
             }
 
-            Gson gson = new Gson();
-
-            // 检查是否已经存在用户
-            DatabaseQuery o1 = (DatabaseQuery) OPERATIONS.get("q");
-            String r1 = o1.executeSql(con, tables, new LinkedList<String>(){
-                {
-                    this.add("name");
-                }
-            }, new HashMap<String, String>(){
-                {
-                    this.put("accountId", parseRequest.getRegAccountId());
-                }
-            });
-            LinkedList<HashMap<String, String>> query = gson.fromJson(r1,
-                    new TypeToken<LinkedList<HashMap<String, String>>>(){}.getType());
+            // 查询用户表
+            LinkedList<HashMap<String, String>> query = new AtomicQueryName(con, tables,
+                    parseRequest.getRegAccountId()).query();
             try {
                 String hasName = query.getFirst().get("name");
                 if (hasName != null) {
@@ -376,8 +275,7 @@ public class Functions {
                     parseRequest.getRegDeath(), parseRequest.getRegBirth(), parseRequest.getRegPersonalId(),
                     parseRequest.getRegAccountId(), parseRequest.getRegHeir());
 
-            DatabaseCreateUser o2 = (DatabaseCreateUser) OPERATIONS.get("cu");
-            boolean success = o2.executeSql(con, user, tables);
+            boolean success = new AtomicCreateUser(con, tables, user).createSingle();
             if (success) {
                 return user.getName() + "用户添加成功";
             } else {
@@ -412,12 +310,7 @@ public class Functions {
         }
 
         try {
-            DatabaseDelUser o1 = (DatabaseDelUser) OPERATIONS.get("du");
-            boolean success = o1.executeSql(con, tables, new HashMap<String, String>(){
-                {
-                    this.put("accountId", parseRequest.getRegAccountId());
-                }
-            });
+            boolean success = new AtomicDelUser(con, tables, parseRequest.getRegAccountId()).delete();
             if (success) {
                 return "用户删除成功";
             } else {
@@ -449,20 +342,9 @@ public class Functions {
             return "用户名或者密码缺失，请检查表单";
         }
 
-        Gson gson = new Gson();
-
         try {
-            DatabaseQuery o1 = (DatabaseQuery) OPERATIONS.get("q");
-            String r1 = o1.executeSql(con, tables, new LinkedList<String>(){
-                {
-                    this.add("password");
-                }
-            }, new HashMap<String, String>(){
-                {
-                    this.put("accountId", parseRequest.getRegAccountId());
-                }
-            });
-            LinkedList<HashMap<String, String>> query = gson.fromJson(r1, new TypeToken<LinkedList<HashMap<String, String>>>(){}.getType());
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
+                    parseRequest.getRegAccountId()).query();
             String databasePasswd = query.getFirst().get("password");
 
             if (databasePasswd.equals(parseRequest.getRegPasswd())) {

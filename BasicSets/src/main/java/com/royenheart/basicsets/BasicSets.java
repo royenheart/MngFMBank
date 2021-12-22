@@ -4,14 +4,21 @@ import com.royenheart.basicsets.jsonsettings.ClientJsonReader;
 import com.royenheart.basicsets.jsonsettings.ClientJsonWriter;
 import com.royenheart.basicsets.jsonsettings.ServerJsonReader;
 import com.royenheart.basicsets.jsonsettings.ServerJsonWriter;
+import com.royenheart.basicsets.programsettings.Client;
+import com.royenheart.basicsets.programsettings.Server;
 
 import java.util.Scanner;
 
 /**
- * 配置文件程序
+ * 配置项目信息程序
  * @author RoyenHeart
  */
 public class BasicSets {
+
+    /**
+     * 仅作为测试方法，不作为真正方法使用
+     * @param args 参数
+     */
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
 
@@ -43,4 +50,7 @@ public class BasicSets {
 
         System.out.println("Settings over and functions test success");
     }
+
+    public BasicSets() {}
+
 }

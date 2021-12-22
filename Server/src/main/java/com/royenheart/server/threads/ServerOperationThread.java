@@ -1,6 +1,6 @@
 package com.royenheart.server.threads;
 
-import com.royenheart.basicsets.Server;
+import com.royenheart.basicsets.programsettings.Server;
 import com.royenheart.server.DatabaseLink;
 import com.royenheart.server.Functions;
 import com.royenheart.server.ParseRequest;
@@ -56,7 +56,7 @@ public class ServerOperationThread extends ServerThread implements Runnable {
         // 客户端请求
         String request;
 
-        while (!ServerApp.getShutdown()) {
+        while (ServerApp.getShutdown()) {
             try {
                 // 不断接收请求，每一个请求进行操作
                 request = in.readUTF();
@@ -94,6 +94,13 @@ public class ServerOperationThread extends ServerThread implements Runnable {
                 }
                 if (Boolean.parseBoolean(result) && !login) {
                     login = true;
+                }
+
+                // 返回登录状态
+                if ("true".equalsIgnoreCase(result)) {
+                    result = "登录成功";
+                } else if ("false".equalsIgnoreCase(result)) {
+                    result = "登录失败";
                 }
 
                 // 返回数据

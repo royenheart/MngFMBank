@@ -1,9 +1,8 @@
 package com.royenheart.server.threads;
 
-import com.royenheart.basicsets.Server;
+import com.royenheart.basicsets.programsettings.Server;
 import com.royenheart.server.Functions;
 import com.royenheart.server.ParseRequest;
-import com.royenheart.server.ServerApp;
 
 import java.lang.reflect.Method;
 import java.net.Socket;

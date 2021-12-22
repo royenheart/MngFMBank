@@ -1,6 +1,6 @@
 package com.royenheart.server;
 
-import com.royenheart.basicsets.Server;
+import com.royenheart.basicsets.programsettings.Server;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

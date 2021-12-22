@@ -1,11 +1,13 @@
-package com.royenheart.basicsets;
+package com.royenheart.basicsets.programsettings;
+
+import com.royenheart.basicsets.CalculateApi;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Bank User Specification
+ * 银行用户设置
  * <p>
  *     accountId为个人账户Id，只允许10位数字，0000000000编号保留用作银行本身
  * </p>
@@ -136,6 +138,14 @@ public class User implements Cloneable {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public void setHeir(String heir) {
+        this.heir = heir;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**

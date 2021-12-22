@@ -1,4 +1,4 @@
-package com.royenheart.basicsets;
+package com.royenheart.basicsets.programsettings;
 
 import com.google.gson.annotations.Expose;
 

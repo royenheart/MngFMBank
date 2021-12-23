@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -15,6 +16,15 @@ public class DatabaseQuery extends DatabaseSelect implements DataLimit {
 
     public DatabaseQuery() {}
 
+    /**
+     * 根据参数选择sql语句查询数据库
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @param fields 需要被查询的字段
+     * @param keyValue 查询键值对（以=方式判断）
+     * @return gson格式查询数据
+     * @throws SQLException 数据库请求错误
+     */
     synchronized public String executeSql(Connection con, String tables, LinkedList<String> fields,
                                           HashMap<String, String> keyValue) throws SQLException {
         this.con = con;
@@ -23,10 +33,66 @@ public class DatabaseQuery extends DatabaseSelect implements DataLimit {
         this.keyValue = keyValue;
 
         Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery(getSql());
+        ResultSet rs = stmt.executeQuery(super.getSql());
         String data = returnData(rs);
         stmt.close();
         return data;
+    }
+
+    /**
+     * 根据参数选择sql语句查询数据库，带判断语句
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @param fields 需要被查询的字段
+     * @param keyValue 查询键值对
+     * @return gson格式查询数据
+     * @throws SQLException 数据库请求错误
+     */
+    synchronized public String executeSqlWithConditions(Connection con, String tables, LinkedList<String> fields,
+                                                        HashMap<String, String> keyValue) throws SQLException {
+        this.con = con;
+        this.tables = tables;
+        this.fields = fields;
+        this.keyValue = keyValue;
+
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery(this.getSql());
+        String data = returnData(rs);
+        stmt.close();
+        return data;
+    }
+
+    /**
+     * 获取sql查询字段，各字段查询方式可指定（以AND逻辑符号连接）
+     * @return sql语句
+     */
+    @Override
+    public String getSql() {
+        StringBuilder sql = new StringBuilder("SELECT ");
+
+        Iterator<String> iteratorW = fields.iterator();
+        while (iteratorW.hasNext()) {
+            sql.append(iteratorW.next());
+            if (iteratorW.hasNext()) {
+                sql.append(",");
+            }
+        }
+
+        sql.append(" FROM ").append(tables).append(" where ");
+
+        Iterator<String> iteratorF = keyValue.keySet().iterator();
+        while (iteratorF.hasNext()) {
+            String key = iteratorF.next();
+            String value = keyValue.get(key);
+            sql.append(String.format("%s%s\"%s\"", key, value.charAt(0)+value.charAt(1), value.substring(2)));
+            if (iteratorF.hasNext()) {
+                sql.append(" AND ");
+            } else {
+                sql.append(" ");
+            }
+        }
+        sql.append(";");
+        return sql.toString();
     }
 
     /**
@@ -42,6 +108,7 @@ public class DatabaseQuery extends DatabaseSelect implements DataLimit {
 
         try {
             ResultSetMetaData metaData = rs.getMetaData();
+            // 获取列数（从1起算）
             int columnNumber = metaData.getColumnCount();
             LinkedList<HashMap<String, String>> obj = new LinkedList<>();
             while (rs.next()) {

@@ -1,14 +1,20 @@
 package com.royenheart.server;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.royenheart.basicsets.programsettings.User;
+import com.royenheart.basicsets.programsettings.UserPattern;
 import com.royenheart.server.atomics.*;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.*;
 
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * 利用锁机制实现各种功能
@@ -31,19 +37,22 @@ public class Functions {
      * @param con 数据库连接
      * @return 结果字符串，以Json或者普通字符串格式发送
      */
-    synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (!login) {
-            return "您尚未登录!";
-        }
-
+    synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables) {
         try {
             if (parseRequest.getRegAccountId() == null) {
                 System.err.println("accountId字段不存在");
                 return "请求accountId字段不存在";
             }
 
-            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con,
-                    tables, parseRequest.getRegAccountId()).query();
+            // 查询转出人密码是否匹配
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
+                    parseRequest.getRegAccountId()).query();
+            if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
+                System.err.println("密码不匹配，无法进行转账");
+                return "密码不匹配，无法进行查询";
+            }
+
+            query = new AtomicQueryMoney(con, tables, parseRequest.getRegAccountId()).query();
             return "当前余额:" + query.getFirst().get("money");
         } catch (SQLException e) {
             System.err.println("数据库请求失败");
@@ -59,18 +68,22 @@ public class Functions {
      * @param tables 数据表
      * @return 取钱数据
      */
-    synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (!login) {
-            return "您尚未登录!";
-        }
-
+    synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables) {
         try {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
                 return "accountId或money字段缺失";
             }
 
-            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con,
+            // 查询转出人密码是否匹配
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
+                    parseRequest.getRegAccountId()).query();
+            if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
+                System.err.println("密码不匹配，无法进行转账");
+                return "密码不匹配，无法取钱";
+            }
+
+            query = new AtomicQueryMoney(con,
                     tables, parseRequest.getRegAccountId()).query();
             double currentMoney = Double.parseDouble(query.getFirst().get("money"));
             double fetchMoney = Double.parseDouble(parseRequest.getRegMoney());
@@ -99,11 +112,7 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (!login) {
-            return "您尚未登录!";
-        }
-
+    synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables) {
         try {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
@@ -139,11 +148,7 @@ public class Functions {
      * @param tables 数据表
      * @return 数据库查询信息
      */
-    synchronized public String transferMoney(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (!login) {
-            return "您尚未登录!";
-        }
-
+    synchronized public String transferMoney(ParseRequest parseRequest, Connection con, String tables) {
         LinkedList<String> mulAccountId = parseRequest.getRegMulAccountId();
         if (mulAccountId == null || mulAccountId.size() != 2) {
             System.err.println("转账所需accountid字段不等于2个");
@@ -151,15 +156,23 @@ public class Functions {
         } else if (parseRequest.getRegMoney() == null) {
             System.err.println("未指定钱数");
             return "未指定钱数";
+        } else if (parseRequest.getRegPasswd() == null) {
+            System.err.println("转出人密码未提供");
+            return "转出人密码未提供";
         }
 
         try {
-            System.out.println("从用户" + mulAccountId.get(0) + "查询");
-            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con,
-                    tables, mulAccountId.get(0)).query();
+            // 查询转出人密码是否匹配
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
+                    mulAccountId.get(0)).query();
+            if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
+                System.err.println("密码不匹配，无法进行转账");
+                return "转出人密码不匹配，无法进行转账";
+            }
+
+            query = new AtomicQueryMoney(con, tables, mulAccountId.get(0)).query();
             double outCurrentMoney = Double.parseDouble(query.getFirst().get("money"));
 
-            System.out.println("从用户" + mulAccountId.get(1) + "查询");
             query = new AtomicQueryMoney(con, tables, mulAccountId.get(1)).query();
             double inCurrentMoney = Double.parseDouble(query.getFirst().get("money"));
 
@@ -198,29 +211,24 @@ public class Functions {
      * @param tables 数据表
      * @return 记录更新信息
      */
-    synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (!login) {
-            return "您尚未登录!";
-        }
-
+    synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables) {
         try {
-            if (parseRequest.getRegAccountId() == null && (parseRequest.getRegMoney() == null ||
-                    parseRequest.getRegAge() == null || parseRequest.getRegSexString() == null ||
-                    parseRequest.getRegName() == null || parseRequest.getRegPasswd() == null ||
-                    parseRequest.getRegPhone() == null || parseRequest.getRegDeath() == null ||
-                    parseRequest.getRegBirth() == null || parseRequest.getRegPersonalId() == null ||
-                    parseRequest.getRegHeir() == null)) {
+            if (parseRequest.accountIdWithOthers()) {
                 System.err.println("请求字段缺失，至少需要accountid和用户信息字段中的一个");
                 return "请求字段缺失，至少需要accountid和用户信息字段中的一个";
             }
 
             HashMap<String, String> updates = new HashMap<>();
-            if (parseRequest.getRegName() != null) { updates.put("name", parseRequest.getRegName()); }
-            if (parseRequest.getRegPasswd() != null) { updates.put("password", parseRequest.getRegPasswd()); }
-            if (parseRequest.getRegPhone() != null) { updates.put("phone", parseRequest.getRegPhone()); }
-            if (parseRequest.getRegDeath() != null) { updates.put("death", parseRequest.getRegDeath()); }
-            if (parseRequest.getRegHeir() != null) { updates.put("heir", parseRequest.getRegHeir()); }
-
+            if (parseRequest.getRegName() != null) { updates.put(String.valueOf(UserPattern.name),
+                    parseRequest.getRegName()); }
+            if (parseRequest.getRegPasswd() != null) { updates.put(String.valueOf(UserPattern.password),
+                    parseRequest.getRegPasswd()); }
+            if (parseRequest.getRegPhone() != null) { updates.put(String.valueOf(UserPattern.phone),
+                    parseRequest.getRegPhone()); }
+            if (parseRequest.getRegDeath() != null) { updates.put(String.valueOf(UserPattern.death),
+                    parseRequest.getRegDeath()); }
+            if (parseRequest.getRegHeir() != null) { updates.put(String.valueOf(UserPattern.heir),
+                    parseRequest.getRegHeir()); }
 
             boolean success = new AtomicUpdateUser(con, tables, parseRequest.getRegAccountId(), updates).update();
             if (success) {
@@ -242,20 +250,11 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String addUser(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (!login) {
-            return "您尚未登录!";
-        }
-
+    synchronized public String addUser(ParseRequest parseRequest, Connection con, String tables) {
         try {
-            if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null ||
-                    parseRequest.getRegAge() == null || parseRequest.getRegSexString() == null ||
-                    parseRequest.getRegName() == null || parseRequest.getRegPasswd() == null ||
-                    parseRequest.getRegPhone() == null || parseRequest.getRegDeath() == null ||
-                    parseRequest.getRegBirth() == null || parseRequest.getRegPersonalId() == null ||
-                    parseRequest.getRegHeir() == null) {
-                System.err.println("请求字段缺失");
-                return "请求字段缺失";
+            if (parseRequest.allPatterns()) {
+                System.err.println("用户请求字段缺失");
+                return "用户请求字段缺失";
             }
 
             // 查询用户表
@@ -299,11 +298,7 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (!login) {
-            return "您尚未登录!";
-        }
-
+    synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables) {
         if (parseRequest.getRegAccountId() == null) {
             System.err.println("未指定删除用户");
             return "未指定删除用户";
@@ -330,11 +325,7 @@ public class Functions {
      * @param tables 数据表
      * @return 返回登录的信息，之后对应线程的登录状态设置为真
      */
-    synchronized public String login(ParseRequest parseRequest, Connection con, String tables, boolean login) {
-        if (login) {
-            return "请勿重复登录";
-        }
-
+    synchronized public String login(ParseRequest parseRequest, Connection con, String tables) {
         if (parseRequest.getRegTable() != null) {
             tables = parseRequest.getRegTable();
         } else if (parseRequest.getRegAccountId() == null || parseRequest.getRegPasswd() == null) {
@@ -358,5 +349,187 @@ public class Functions {
             return "数据库请求失败";
         }
     }
+
+    /**
+     * 通过xls文件批量开户
+     * @param parseRequest 客户端请求解析
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @return 数据库查询信息
+     */
+    synchronized public String xlsCreate(ParseRequest parseRequest, Connection con, String tables) {
+        File file = new File("./createRequest.xls");
+        try {
+            readXls(file, parseRequest);
+        } catch (FileNotFoundException e) {
+            return "空请求/服务器出现未知错误，请联系管理员";
+        } catch (IOException e) {
+            return "服务器读写错误，请联系管理员";
+        }
+
+        try (FileInputStream fileInputStream = new FileInputStream(file);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+             POIFSFileSystem fileSystem = new POIFSFileSystem(bufferedInputStream);
+             HSSFWorkbook workbook = new HSSFWorkbook(fileSystem)) {
+            HSSFSheet sheet = workbook.getSheetAt(0);
+
+            Iterator<Row> rows = sheet.rowIterator();
+            if (rows.hasNext()) {
+                Iterator<Cell> cells = rows.next().cellIterator();
+                LinkedList<String> patterns = new LinkedList<>();
+                // 生成各列对应的字段
+                while (cells.hasNext()) {
+                    patterns.add(cells.next().getStringCellValue());
+                }
+
+                ArrayList<Integer> errors = new ArrayList<>();
+                LinkedList<User> users = cellsGetUser(rows, patterns, errors);
+
+                boolean success = new AtomicCreateUser(con, tables, users).createMul();
+                boolean rm = file.delete();
+                if (success && errors.isEmpty() && rm ) {
+                    return "批量开户成功";
+                } else if (!(success && errors.isEmpty())) {
+                    StringBuilder errMsg = new StringBuilder("批量开户失败，请检查\n");
+                    for (Integer tmp : errors) {
+                        errMsg.append("在").append(tmp).append("行上出现错误\n");
+                    }
+                    return String.valueOf(errMsg);
+                } else {
+                    return "服务端IO资源出错，请联系管理员";
+                }
+            } else {
+                System.err.println("空excel表");
+                return "空excel表";
+            }
+        } catch (IOException e) {
+            System.err.println("excel文件打开失败");
+            e.printStackTrace();
+            return "文件打开失败";
+        } catch (SQLException e) {
+            System.err.println("数据库请求失败");
+            e.printStackTrace();
+            return "数据库请求失败";
+        }
+    }
+
+    /**
+     * 根据字节数组列表字符串接收文件
+     * @param file 写出的文件（由调用者指定）
+     * @param parseRequest 解析出的字节数组列表解析器
+     * @throws FileNotFoundException 空请求或者临时文件不存在
+     * @throws IOException 读写失败
+     */
+    synchronized private void readXls(File file, ParseRequest parseRequest) throws
+            FileNotFoundException, IOException {
+        try (FileOutputStream excelStream = new FileOutputStream(file);
+             DataOutputStream out = new DataOutputStream(excelStream)) {
+            Gson gson = new Gson();
+
+            LinkedList<String> fileBytes = parseRequest.getRegMulBytes();
+            if (fileBytes == null) {
+                System.err.println("空文件");
+                throw new FileNotFoundException("空文件");
+            }
+
+            for (String bytes : fileBytes) {
+                byte[] temp = gson.fromJson(bytes, new TypeToken<byte[]>() {}.getType());
+                out.write(temp);
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("创建文件未找到");
+            throw e;
+        } catch (IOException e) {
+            System.err.println("文件接收失败");
+            throw e;
+        }
+    }
+
+    synchronized private String writeXls(File file, ParseRequest parseRequest) {
+        byte[] xlsData = new byte[300];
+        StringBuilder response = new StringBuilder();
+        Gson gson = new Gson();
+
+        try (FileInputStream inputStream = new FileInputStream(file);
+             DataInputStream dataInputStream = new DataInputStream(inputStream)) {
+            while (dataInputStream.read(xlsData) > 0) {
+                String js = gson.toJson(xlsData).replace(" ", "");
+                response.append(js);
+            }
+        } catch (IOException e) {
+            System.err.println("文件未找到");
+            e.printStackTrace();
+            return null;
+        }
+        return String.valueOf(response);
+    }
+
+    /**
+     * 读取一行单元格生成伪请求，交给ParseRequest解析字段，生成用户
+     * @param rows 行迭代器
+     * @param patterns 各列对应字段
+     * @param errors 错误行
+     * @return 用户列表（链表形式）
+     */
+    synchronized private LinkedList<User> cellsGetUser(Iterator<Row> rows, LinkedList<String> patterns,
+                                                       ArrayList<Integer> errors) {
+        LinkedList<User> users = new LinkedList<>();
+        while (rows.hasNext()) {
+            Row currentRow = rows.next();
+            StringBuilder userPatterns = new StringBuilder().append("F%");
+            Iterator<Cell> cells = currentRow.cellIterator();
+            // 遍历excel各列字段
+            ListIterator<String> pattern = patterns.listIterator(0);
+            while (cells.hasNext()) {
+                userPatterns.append(String.format("%s:%s;", pattern.next(), cells.next().getStringCellValue()));
+            }
+            userPatterns.append("%");
+            ParseRequest parseRequest = new ParseRequest(String.valueOf(userPatterns));
+            try {
+                users.add(new User(parseRequest.getRegAge(), parseRequest.getRegSexString(), parseRequest.getRegName(),
+                        parseRequest.getRegPasswd(), parseRequest.getRegPhone(), parseRequest.getRegMoney(),
+                        parseRequest.getRegDeath(), parseRequest.getRegBirth(), parseRequest.getRegPersonalId(),
+                        parseRequest.getRegAccountId(), parseRequest.getRegHeir()));
+            } catch (ParseException e) {
+                errors.add(currentRow.getRowNum());
+                System.err.println(currentRow.getRowNum() + "行用户字段解析失败，已丢弃");
+                e.printStackTrace();
+            }
+        }
+        return users;
+    }
+
+
+    /**
+     * 将特定查询信息导出为xls文件，先查询，再根据查询结果创建xls文件对象
+     * @param parseRequest 客户端请求解析
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @return xls文件的字节数组列表字符串，交给客户端，客户端解析之后进行文件的转换
+     */
+    synchronized public String queryXls(ParseRequest parseRequest, Connection con, String tables) {
+        File file = new File("./queryOut.xls");
+
+        try {
+            LinkedList<HashMap<String, String>> query = new AtomicQueryAll(con, tables,
+                    parseRequest).query();
+        } catch (SQLException e) {
+            System.err.println("数据库请求失败");
+            e.printStackTrace();
+            return "数据库请求失败";
+        }
+    }
+
+    /**
+     * 生成年终报告并返回给客户端
+     * @param parseRequest 客户端请求解析
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @return 数据库查询信息
+     */
+    synchronized public String queryYearlyReport(ParseRequest parseRequest, Connection con, String tables) {
+
+    }
+
 
 }

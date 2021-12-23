@@ -42,7 +42,6 @@ public class AtomicQueryMoney extends AtomicOperations {
                 this.put("accountId", accountId);
             }
         });
-        return gson.fromJson(r1, new TypeToken<LinkedList<HashMap<String, String>>>() {
-        }.getType());
+        return gson.fromJson(r1, new TypeToken<LinkedList<HashMap<String, String>>>() {}.getType());
     }
 }

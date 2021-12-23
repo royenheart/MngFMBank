@@ -31,7 +31,27 @@ public class ParseRequest {
     private static final String REG_PERSONALID = "personalId:[0-9]{12};";
     private static final String REG_HEIR = "heir:[0-9]{10};";
     private static final String REG_TABLE = "table:[^;\\f\\n\\rt\\t]+;";
+    /**
+     * 匹配字符串中的字节数组
+     */
+    private static final String REG_BYTES = "\\[([0-9]+,{0,1})+\\]";
     private static final String REG_VALUE = "(?<=:).*(?=;)";
+
+    // 带条件判断的键值对
+
+    private static final String REG_AGE_CONDITION = "age:[^;\\f\\n\\rt\\t]+[0-9]+;";
+    private static final String REG_SEX_BOOLEAN_CONDITION =
+            "(sex:[^;\\f\\n\\rt\\t]+true;)|(sex:[^;\\f\\n\\rt\\t]+false;)";
+    private static final String REG_SEX_STRING_CONDITION = "(sex:[^;\\f\\n\\rt\\t]+m;)|(sex:[^;\\f\\n\\rt\\t]+f;)";
+    private static final String REG_PHONE_CONDITION = "phone:[^;\\f\\n\\rt\\t]+[0-9]{11};";
+    private static final String REG_MONEY_CONDITION =
+            "(money:[^;\\f\\n\\rt\\t]+[0-9]+;)|(money:[^;\\f\\n\\rt\\t]+[0-9]+\\.[0-9]+;)";
+    private static final String REG_DEATH_CONDITION =
+            "(death:[^;\\f\\n\\rt\\t]+true;)|(death:[^;\\f\\n\\rt\\t]+false;)";
+    private static final String REG_BIRTH_CONDITION = "birth:[^;\\f\\n\\rt\\t]+[0-9]+-[0-9]+-[0-9]+;";
+    private static final String REG_ACCOUNTID_CONDITION = "accountId:[^;\\f\\n\\rt\\t]+[0-9]{10};";
+    private static final String REG_PERSONALID_CONDITION = "personalId:[^;\\f\\n\\rt\\t]+[0-9]{12};";
+    private static final String REG_HEIR_CONDITION = "heir:[^;\\f\\n\\rt\\t]+[0-9]{10};";
 
     private final boolean legal;
     private String content;
@@ -116,6 +136,46 @@ public class ParseRequest {
         return getRegV(REG_HEIR, "heir");
     }
 
+    public String getRegAgeCondition() {
+        return getRegV(REG_AGE_CONDITION, "age");
+    }
+
+    public String getRegSexBooleanCondition() {
+        return getRegV(REG_SEX_BOOLEAN_CONDITION, "sex");
+    }
+
+    public String getRegSexStringCondition() {
+        return getRegV(REG_SEX_STRING_CONDITION, "sex");
+    }
+
+    public String getRegPhoneCondition() {
+        return getRegV(REG_PHONE_CONDITION, "phone");
+    }
+
+    public String getRegMoneyCondition() {
+        return getRegV(REG_MONEY_CONDITION, "money");
+    }
+
+    public String getRegDeathCondition() {
+        return getRegV(REG_DEATH_CONDITION, "death");
+    }
+
+    public String getRegBirthCondition() {
+        return getRegV(REG_BIRTH_CONDITION, "birth");
+    }
+
+    public String getRegAccountIdCondition() {
+        return getRegV(REG_ACCOUNTID_CONDITION, "accountId");
+    }
+
+    public String getRegPersonalIdCondition() {
+        return getRegV(REG_PERSONALID_CONDITION, "personalId");
+    }
+
+    public String getRegHeirCondition() {
+        return getRegV(REG_HEIR_CONDITION, "heir");
+    }
+
     /**
      * 匹配多个accountId，用于转账，第一个匹配到的为转出人
      * @return 以LinkedList存储的accountId
@@ -136,6 +196,29 @@ public class ParseRequest {
             return null;
         } else {
             return accountIds;
+        }
+    }
+
+    /**
+     * 匹配字符串中多个字节数组，用于文件传输（以字节数组的形式）
+     * @return Gson格式字节数组字符串数链表
+     */
+    public LinkedList<String> getRegMulBytes() {
+        Pattern r = Pattern.compile(REG_BYTES, Pattern.CASE_INSENSITIVE);
+        Matcher m = r.matcher(content);
+        LinkedList<String> bytes = new LinkedList<>();
+
+        int mStart = 0;
+        while (m.find(mStart)) {
+            mStart = m.end();
+            bytes.add(m.group());
+        }
+
+        if (mStart == 0) {
+            System.err.println("空文件");
+            return null;
+        } else {
+            return bytes;
         }
     }
 
@@ -207,4 +290,28 @@ public class ParseRequest {
             return null;
         }
     }
+
+    /**
+     * 查看是否缺少accountId还有其他字段中至少一个这个条件
+     * @return 是否缺少
+     */
+    public boolean accountIdWithOthers() {
+        return getRegAccountId() == null && (getRegMoney() == null || getRegAge() == null || getRegSexString() == null
+                || getRegName() == null || getRegPasswd() == null || getRegPhone() == null || getRegDeath() == null
+                || getRegBirth() == null || getRegPersonalId() == null || getRegHeir() == null);
+    }
+
+    /**
+     * 查看是否缺少用户全部所需字段中的任何一个或多个
+     * @return 是否缺少
+     */
+    public boolean allPatterns() {
+        return getRegAccountId() == null || getRegMoney() == null ||
+                getRegAge() == null || getRegSexString() == null ||
+                getRegName() == null || getRegPasswd() == null ||
+                getRegPhone() == null || getRegDeath() == null ||
+                getRegBirth() == null || getRegPersonalId() == null ||
+                getRegHeir() == null;
+    }
+
 }

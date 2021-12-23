@@ -72,6 +72,13 @@ public class ServerOperationThread extends ServerThread implements Runnable {
                     continue;
                 }
 
+                // 登录检查
+                if (!"X".equals(parseMachine.getRegFunc()) && !login) {
+                    System.err.println("未登录，禁止操作");
+                    out.writeUTF("您还未登录");
+                    continue;
+                }
+
                 // 根据请求字段连接数据库
                 Connection newCon = new DatabaseLink(serverSets).connectDb();
                 if (newCon != null) {
@@ -82,9 +89,9 @@ public class ServerOperationThread extends ServerThread implements Runnable {
                     continue;
                 }
 
-                // 传入解析器，功能对象，数据库连接，数据表
+                // 传入解析器，功能对象，数据库连接，数据表（默认为Users）
                 String result = (String) FUNC.get(parseMachine.getRegFunc().toUpperCase()).invoke(Functions.getMe(),
-                        parseMachine, newCon, "Users", this.login);
+                        parseMachine, newCon, "Users");
                 if (result != null) {
                     System.out.println("请求指定操作成功");
                 } else {

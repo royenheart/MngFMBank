@@ -61,7 +61,8 @@ public class User implements Cloneable {
     }
 
     public User(int age, char sex, String name, String password, String phone,
-                double money, boolean death, String birth, String personalId, String accountId,String heir) throws ParseException {
+                double money, boolean death, String birth, String personalId, String accountId, String heir)
+            throws ParseException {
         this.age = age;
         this.sex = sex;
         this.name = name;

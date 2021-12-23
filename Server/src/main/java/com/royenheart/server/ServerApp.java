@@ -47,7 +47,6 @@ public class ServerApp {
     }
 
     private static final ExecutorService OPERATIONS;
-    private static final ExecutorService MAIL_SYS;
     private static final ScheduledExecutorService TIMER;
     private static final ExecutorService LISTEN_CMD;
     private static final ExecutorService LISTEN_CONNECT;
@@ -60,12 +59,6 @@ public class ServerApp {
                 TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
                 new NamedThreadFactory("ClientOperationsRequest"));
-        // 创建邮件系统有关的线程池
-        MAIL_SYS = new
-                ThreadPoolExecutor(0, 40, 60L,
-                TimeUnit.SECONDS,
-                new SynchronousQueue<>(),
-                new NamedThreadFactory("MailSystemRequest"));
         // 创建定时任务，负责星球时间的统计，并定时执行星球数据的刷新
         TIMER = Executors.newScheduledThreadPool(1);
         // 创建服务端命令监听线程池
@@ -102,7 +95,7 @@ public class ServerApp {
         LISTEN_CMD.submit(new ServerCmdThread());
         LISTEN_CMD.shutdown();
 
-        // 添加请求监听线程
+        // 添加请求/邮件系统监听线程
         LISTEN_CONNECT.submit(new ServerRequestThread(server, serverSets));
 
         // 添加星球时间（每24分钟，即一分钟对应1小时进行星球时间的刷新，相当于1天）
@@ -115,7 +108,6 @@ public class ServerApp {
                     public void run() {
                         if (LISTEN_CMD.isTerminated()) {
                             OPERATIONS.shutdown();
-                            MAIL_SYS.shutdown();
                             TIMER.shutdown();
                             // 强制关闭请求接收线程，请求接收线程需对中断错误进行处理
                             LISTEN_CONNECT.shutdownNow();
@@ -123,7 +115,6 @@ public class ServerApp {
                             shutdown = true;
                             try {
                                 if (OPERATIONS.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS) &&
-                                        MAIL_SYS.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS) &&
                                         TIMER.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS)) {
                                     System.out.println("线程执行完毕，服务端执行关闭");
 

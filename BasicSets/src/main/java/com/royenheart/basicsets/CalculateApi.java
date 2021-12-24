@@ -6,10 +6,12 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * 计算模块，用于服务端数据的计算
+ * 计算模块，用于服务端、客户端数据的计算
  * @author RoyenHeart
  */
 public class CalculateApi {
+
+    public CalculateApi() {}
 
     /**
      * 计算起始日期和终止日期的间隔年份
@@ -136,6 +138,18 @@ public class CalculateApi {
             // 密码不得出现空白字符
             return passwd.matches("[^\f\n\r\t]+");
         }
+    }
+
+    /**
+     * 根据给定星球数据计算计算利息
+     * @return 计算出的利息
+     */
+    public static double interest(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire) {
+        return 1.0 * (255 - wars) / 300.0
+                * (bankWill + 0.6)
+                * (ecoRate + 0.5)
+                * (1.0 - ecoBubble)
+                * (100 - investFire)/150.0;
     }
 
 }

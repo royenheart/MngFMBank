@@ -1,16 +1,15 @@
 package com.royenheart.server;
 
+import com.royenheart.basicsets.jsonsettings.*;
+import com.royenheart.basicsets.programsettings.Events;
 import com.royenheart.basicsets.programsettings.Planet;
 import com.royenheart.basicsets.programsettings.Server;
-import com.royenheart.basicsets.jsonsettings.PlanetJsonReader;
-import com.royenheart.basicsets.jsonsettings.PlanetJsonWriter;
-import com.royenheart.basicsets.jsonsettings.ServerJsonReader;
-import com.royenheart.basicsets.jsonsettings.ServerJsonWriter;
 import com.royenheart.server.threads.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.ParseException;
 import java.util.concurrent.*;
 
 /**
@@ -42,8 +41,8 @@ public class ServerApp {
      * @param client 客户端socket连接
      * @param serverSets 服务端设置
      */
-    public static void executorOperationsSubmit(Socket client, Server serverSets) {
-        OPERATIONS.submit(new ServerOperationThread(client, serverSets));
+    public static void executorOperationsSubmit(Socket client, Server serverSets, Planet planetSets) {
+        OPERATIONS.submit(new ServerOperationThread(client, serverSets, planetSets));
     }
 
     private static final ExecutorService OPERATIONS;
@@ -78,9 +77,16 @@ public class ServerApp {
     public static void main(String[] args) {
         ServerSocket server = null;
 
+        Planet planetSets = null;
         // 从设置文件内读入设置
         Server serverSets = new ServerJsonReader().getServerFromSets();
-        Planet planetSets = new PlanetJsonReader().getPlanetFromSets();
+        try {
+            planetSets = new PlanetJsonReader().getPlanetFromSets();
+        } catch (ParseException e) {
+            System.err.println("星球设置解析失败，请检查设置文件");
+            System.exit(-1);
+        }
+        Events eventsSets = new EventsJsonReader().getEventsFromSets();
 
         // 根据设置文件开启监听端口等待客户端连接，当接收到连接后开辟新的线程进行处理
         try {
@@ -96,12 +102,13 @@ public class ServerApp {
         LISTEN_CMD.shutdown();
 
         // 添加请求/邮件系统监听线程
-        LISTEN_CONNECT.submit(new ServerRequestThread(server, serverSets));
+        LISTEN_CONNECT.submit(new ServerRequestThread(server, serverSets, planetSets));
 
         // 添加星球时间（每24分钟，即一分钟对应1小时进行星球时间的刷新，相当于1天）
-        TIMER.scheduleAtFixedRate(new ServerTimeThread(), 0, 12, TimeUnit.MINUTES);
+        TIMER.scheduleAtFixedRate(new ServerTimeThread(serverSets, planetSets, eventsSets), 0, 24, TimeUnit.MINUTES);
 
         // 持续监听端口，处理请求的连接
+        Planet finalPlanetSets = planetSets;
         JUDGE_QUIT.scheduleAtFixedRate(
                 new Runnable() {
                     @Override
@@ -123,9 +130,11 @@ public class ServerApp {
                                     ServerJsonWriter storeServer = new ServerJsonWriter();
                                     boolean store1 = storeServer.store(serverSets);
                                     PlanetJsonWriter storePlanet = new PlanetJsonWriter();
-                                    boolean store2 = storePlanet.store(planetSets);
+                                    boolean store2 = storePlanet.store(finalPlanetSets);
+                                    EventsJsonWriter storeEvents= new EventsJsonWriter();
+                                    boolean store3 = storeEvents.store(eventsSets);
 
-                                    if (store1 && store2) {
+                                    if (store1 && store2 && store3) {
                                         System.out.println("资源保存成功，服务端关闭");
                                         System.exit(0);
                                     } else {

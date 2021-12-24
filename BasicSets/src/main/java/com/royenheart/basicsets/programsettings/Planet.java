@@ -3,6 +3,7 @@ package com.royenheart.basicsets.programsettings;
 import com.google.gson.annotations.Expose;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -41,18 +42,8 @@ public class Planet {
     private double bankWill;
     @Expose
     private double investFire;
-    private Date planetTimeDate;
     @Expose
-    private String planetTime;
-
-    public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, String planetTime) {
-        this.wars = wars;
-        this.ecoRate = ecoRate;
-        this.ecoBubble = ecoBubble;
-        this.bankWill = bankWill;
-        this.investFire = investFire;
-        this.planetTime = planetTime;
-    }
+    private Date planetTime;
 
     public Planet(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire, Date planetTimeDate) {
         this.wars = wars;
@@ -60,7 +51,7 @@ public class Planet {
         this.ecoBubble = ecoBubble;
         this.bankWill = bankWill;
         this.investFire = investFire;
-        this.planetTime = new SimpleDateFormat("yyyy-MM-dd").format(planetTimeDate);
+        this.planetTime = planetTimeDate;
     }
 
     public int getWars() {
@@ -84,11 +75,7 @@ public class Planet {
     }
 
     public String getPlanetTime() {
-        return planetTime;
-    }
-
-    public Date getPlanetTimeDate() {
-        return planetTimeDate;
+        return new SimpleDateFormat("yyyy-MM-dd").format(planetTime);
     }
 
     public void setWars(int wars) {
@@ -111,11 +98,61 @@ public class Planet {
         this.investFire = investFire;
     }
 
-    public void setPlanetTime(String planetTime) {
+    public void setPlanetTime(Date planetTime) {
         this.planetTime = planetTime;
     }
 
-    public void setPlanetTimeDate(Date planetTimeDate) {
-        this.planetTimeDate = planetTimeDate;
+    /**
+     * 经过一天，通过日历对象进行星球事件的更新
+     * @return 是否经过一年
+     */
+    public boolean updatePlanetTime() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(planetTime);
+        int y1 = calendar.get(Calendar.YEAR);
+        calendar.add(Calendar.DATE, 1);
+        int y2 = calendar.get(Calendar.YEAR);
+        planetTime = calendar.getTime();
+        return y2 > y1;
+    }
+
+    /**
+     * 获取当前年份
+     * @return 当前年份
+     */
+    public Integer getYear() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(planetTime);
+        return cal.get(Calendar.YEAR);
+    }
+
+    public int restraintWars(int wars) {
+        if (wars < WAR_MIN) {
+            return WAR_MIN;
+        } else { return Math.min(wars, WAR_MAX); }
+    }
+
+    public double restraintEcoRate(double ecoRate) {
+        if (ecoRate < ECO_RATE_MIN) {
+            return ECO_RATE_MIN;
+        } else { return Math.min(ecoRate, ECO_RATE_MAX); }
+    }
+
+    public double restraintEcoBubble(double ecoBubble) {
+        if (ecoBubble < ECO_BUBBLE_MIN) {
+            return ECO_BUBBLE_MIN;
+        } else { return Math.min(ecoBubble, ECO_BUBBLE_MAX); }
+    }
+
+    public double restraintBankWill(double bankWill) {
+        if (bankWill < BANK_WILL_MIN) {
+            return BANK_WILL_MIN;
+        } else { return Math.min(bankWill, BANK_WILL_MAX); }
+    }
+
+    public double restraintInvestFire(double investFire) {
+        if (investFire < INVEST_FIRE_MIN) {
+            return INVEST_FIRE_MIN;
+        } else { return Math.min(investFire, INVEST_FIRE_MAX); }
     }
 }

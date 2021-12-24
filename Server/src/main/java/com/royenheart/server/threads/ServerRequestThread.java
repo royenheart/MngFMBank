@@ -1,5 +1,6 @@
 package com.royenheart.server.threads;
 
+import com.royenheart.basicsets.programsettings.Planet;
 import com.royenheart.basicsets.programsettings.Server;
 import com.royenheart.server.ServerApp;
 
@@ -15,10 +16,12 @@ public class ServerRequestThread implements Runnable {
 
     private final ServerSocket server;
     private final Server serverSets;
+    private final Planet planetSets;
 
-    public ServerRequestThread(ServerSocket server, Server serverSets) {
+    public ServerRequestThread(ServerSocket server, Server serverSets, Planet planetSets) {
         this.server = server;
         this.serverSets = serverSets;
+        this.planetSets = planetSets;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class ServerRequestThread implements Runnable {
             // 当监听到请求且正确接收后，为每一个请求（客户端）分配一个线程
             if (client != null) {
                 ServerApp.plusConnect();
-                ServerApp.executorOperationsSubmit(client, serverSets);
+                ServerApp.executorOperationsSubmit(client, serverSets, planetSets);
             }
         }
     }

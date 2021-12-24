@@ -2,7 +2,7 @@ package com.royenheart.basicsets.jsonsettings;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.royenheart.basicsets.programsettings.Planet;
+import com.royenheart.basicsets.programsettings.Events;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,18 +10,16 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 /**
- * 星球Json数据读入
+ * 行星事件产生、调用器配置读取
  * @author RoyenHeart
  */
-public class PlanetJsonReader extends JsonReader {
+public class EventsJsonReader extends JsonReader {
+    private Events events;
 
-    private Planet planetSets;
-
-    public Planet getPlanetFromSets() throws ParseException {
+    public Events getEventsFromSets() {
         boolean syntax;
         try {
             syntax = initial();
@@ -30,21 +28,20 @@ public class PlanetJsonReader extends JsonReader {
             syntax = false;
             e.printStackTrace();
         }
-        return (syntax)?planetSets:(planetSets = new Planet(0, 10, 0.3, 0.6, 0.4,
-                new SimpleDateFormat("yyyy-MM-dd").parse("2045-01-01")));
+        return (syntax)?events:(events = new Events(new ArrayList<>()));
     }
 
     @Override
     public boolean initial() throws IOException {
         Gson gson = new Gson();
 
-        String path = "resources/planet/";
+        String path = "resources/events/";
         File file = new File(path+"settings.json");
         Path fp = file.toPath();
 
         Reader reader = Files.newBufferedReader(fp, StandardCharsets.UTF_8);
         try {
-            this.planetSets = gson.fromJson(reader, Planet.class);
+            this.events = gson.fromJson(reader, Events.class);
         } catch (JsonSyntaxException e) {
             System.err.println(file.getName() + ":json格式错误，已跳过");
             e.printStackTrace();
@@ -53,5 +50,4 @@ public class PlanetJsonReader extends JsonReader {
         reader.close();
         return true;
     }
-
 }

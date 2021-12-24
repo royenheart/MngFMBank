@@ -49,25 +49,44 @@ public class DatabaseQuery extends DatabaseSelect implements DataLimit {
      * @throws SQLException 数据库请求错误
      */
     synchronized public String executeSqlWithConditions(Connection con, String tables, LinkedList<String> fields,
-                                                        HashMap<String, String> keyValue) throws SQLException {
+                                                        HashMap<String, String> keyValue, String link) throws SQLException {
         this.con = con;
         this.tables = tables;
         this.fields = fields;
         this.keyValue = keyValue;
 
         Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery(this.getSql());
+        ResultSet rs = stmt.executeQuery(this.getSql(link));
         String data = returnData(rs);
         stmt.close();
         return data;
     }
 
     /**
-     * 获取sql查询字段，各字段查询方式可指定（以AND逻辑符号连接）
+     * 查询指定字段的所有记录
+     * @param con 数据库连接
+     * @param tables 使用的数据表
+     * @param field 使用的字段
+     * @return 数据库查询数据
+     * @throws SQLException 数据库请求错误
+     */
+    synchronized public String executeSqlOneForAll(Connection con, String tables, String field) throws SQLException {
+        this.con = con;
+        this.tables = tables;
+
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT " + field + " FROM " + tables);
+        String data = returnData(rs);
+        stmt.close();
+        return data;
+    }
+
+    /**
+     * 获取sql查询字段，各字段查询方式可指定
+     * @param link 各条件判断之间的逻辑运算符
      * @return sql语句
      */
-    @Override
-    public String getSql() {
+    public String getSql(String link) {
         StringBuilder sql = new StringBuilder("SELECT ");
 
         Iterator<String> iteratorW = fields.iterator();
@@ -86,7 +105,7 @@ public class DatabaseQuery extends DatabaseSelect implements DataLimit {
             String value = keyValue.get(key);
             sql.append(String.format("%s%s\"%s\"", key, value.charAt(0)+value.charAt(1), value.substring(2)));
             if (iteratorF.hasNext()) {
-                sql.append(" AND ");
+                sql.append(" ").append(link).append(" ");
             } else {
                 sql.append(" ");
             }

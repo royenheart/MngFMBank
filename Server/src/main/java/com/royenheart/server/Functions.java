@@ -2,15 +2,24 @@ package com.royenheart.server;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.royenheart.basicsets.programsettings.Planet;
+import com.royenheart.basicsets.programsettings.SingleEvent;
 import com.royenheart.basicsets.programsettings.User;
 import com.royenheart.basicsets.programsettings.UserPattern;
 import com.royenheart.server.atomics.*;
+import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -37,7 +46,7 @@ public class Functions {
      * @param con 数据库连接
      * @return 结果字符串，以Json或者普通字符串格式发送
      */
-    synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
             if (parseRequest.getRegAccountId() == null) {
                 System.err.println("accountId字段不存在");
@@ -68,7 +77,7 @@ public class Functions {
      * @param tables 数据表
      * @return 取钱数据
      */
-    synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
@@ -112,7 +121,7 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
@@ -148,7 +157,8 @@ public class Functions {
      * @param tables 数据表
      * @return 数据库查询信息
      */
-    synchronized public String transferMoney(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String transferMoney(ParseRequest parseRequest,
+                                             Connection con, String tables, Planet planetSets) {
         LinkedList<String> mulAccountId = parseRequest.getRegMulAccountId();
         if (mulAccountId == null || mulAccountId.size() != 2) {
             System.err.println("转账所需accountid字段不等于2个");
@@ -211,7 +221,7 @@ public class Functions {
      * @param tables 数据表
      * @return 记录更新信息
      */
-    synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
             if (parseRequest.accountIdWithOthers()) {
                 System.err.println("请求字段缺失，至少需要accountid和用户信息字段中的一个");
@@ -250,14 +260,14 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String addUser(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String addUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
             if (parseRequest.allPatterns()) {
                 System.err.println("用户请求字段缺失");
                 return "用户请求字段缺失";
             }
 
-            // 查询用户表
+            // 查询用户是否已经存在
             LinkedList<HashMap<String, String>> query = new AtomicQueryName(con, tables,
                     parseRequest.getRegAccountId()).query();
             try {
@@ -276,6 +286,7 @@ public class Functions {
 
             boolean success = new AtomicCreateUser(con, tables, user).createSingle();
             if (success) {
+                BankData.addNewUsers(planetSets.getYear(), 1);
                 return user.getName() + "用户添加成功";
             } else {
                 return "添加失败，请检查";
@@ -298,7 +309,7 @@ public class Functions {
      * @param tables 数据表
      * @return 返回更新的信息
      */
-    synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         if (parseRequest.getRegAccountId() == null) {
             System.err.println("未指定删除用户");
             return "未指定删除用户";
@@ -325,7 +336,7 @@ public class Functions {
      * @param tables 数据表
      * @return 返回登录的信息，之后对应线程的登录状态设置为真
      */
-    synchronized public String login(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String login(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         if (parseRequest.getRegTable() != null) {
             tables = parseRequest.getRegTable();
         } else if (parseRequest.getRegAccountId() == null || parseRequest.getRegPasswd() == null) {
@@ -357,10 +368,10 @@ public class Functions {
      * @param tables 数据表
      * @return 数据库查询信息
      */
-    synchronized public String xlsCreate(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String xlsCreate(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         File file = new File("./createRequest.xls");
         try {
-            readXls(file, parseRequest);
+            readFile(file, parseRequest);
         } catch (FileNotFoundException e) {
             return "空请求/服务器出现未知错误，请联系管理员";
         } catch (IOException e) {
@@ -385,9 +396,11 @@ public class Functions {
                 ArrayList<Integer> errors = new ArrayList<>();
                 LinkedList<User> users = cellsGetUser(rows, patterns, errors);
 
+                // 原子操作批量开户
                 boolean success = new AtomicCreateUser(con, tables, users).createMul();
                 boolean rm = file.delete();
                 if (success && errors.isEmpty() && rm ) {
+                    BankData.addNewUsers(planetSets.getYear(), users.size() - errors.size());
                     return "批量开户成功";
                 } else if (!(success && errors.isEmpty())) {
                     StringBuilder errMsg = new StringBuilder("批量开户失败，请检查\n");
@@ -420,7 +433,7 @@ public class Functions {
      * @throws FileNotFoundException 空请求或者临时文件不存在
      * @throws IOException 读写失败
      */
-    synchronized private void readXls(File file, ParseRequest parseRequest) throws
+    synchronized private void readFile(File file, ParseRequest parseRequest) throws
             FileNotFoundException, IOException {
         try (FileOutputStream excelStream = new FileOutputStream(file);
              DataOutputStream out = new DataOutputStream(excelStream)) {
@@ -445,7 +458,12 @@ public class Functions {
         }
     }
 
-    synchronized private String writeXls(File file, ParseRequest parseRequest) {
+    /**
+     * 将文件按字节数组列表导出
+     * @param file 需要导出的文件
+     * @return 文件对应的字节数组列表
+     */
+    synchronized private String writeFile(File file) {
         byte[] xlsData = new byte[300];
         StringBuilder response = new StringBuilder();
         Gson gson = new Gson();
@@ -507,12 +525,124 @@ public class Functions {
      * @param tables 数据表
      * @return xls文件的字节数组列表字符串，交给客户端，客户端解析之后进行文件的转换
      */
-    synchronized public String queryXls(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String queryXls(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         File file = new File("./queryOut.xls");
+        LinkedList<HashMap<String, String>> query;
 
         try {
+            query = new AtomicQueryAll(con, tables, parseRequest).query("AND");
+        } catch (SQLException e) {
+            System.err.println("数据库请求失败");
+            e.printStackTrace();
+            return "数据库请求失败";
+        }
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file);
+             HSSFWorkbook workbook = new HSSFWorkbook()) {
+
+            // 创建数据表
+            int rowIndex = 0;
+            HSSFSheet sheet = workbook.createSheet();
+            HSSFRow row = sheet.createRow(rowIndex);
+            row.createCell(0).setCellValue(String.valueOf(UserPattern.accountId));
+            row.createCell(1).setCellValue(String.valueOf(UserPattern.personalId));
+            row.createCell(2).setCellValue(String.valueOf(UserPattern.name));
+            row.createCell(3).setCellValue(String.valueOf(UserPattern.age));
+            row.createCell(4).setCellValue(String.valueOf(UserPattern.sex));
+            row.createCell(5).setCellValue(String.valueOf(UserPattern.password));
+            row.createCell(6).setCellValue(String.valueOf(UserPattern.phone));
+            row.createCell(7).setCellValue(String.valueOf(UserPattern.money));
+            row.createCell(8).setCellValue(String.valueOf(UserPattern.death));
+            row.createCell(9).setCellValue(String.valueOf(UserPattern.birth));
+            row.createCell(10).setCellValue(String.valueOf(UserPattern.heir));
+
+            for (HashMap<String, String> stringStringHashMap : query) {
+                rowIndex += 1;
+                row = sheet.createRow(rowIndex);
+                for (int i = 0; i <= 10; i++) {
+                    row.createCell(i).setCellValue(
+                            stringStringHashMap.get(sheet.getRow(0).getCell(i).getStringCellValue()));
+                }
+            }
+
+            workbook.write(fileOutputStream);
+        } catch (FileNotFoundException e) {
+            System.err.println("创建文件未找到");
+            e.printStackTrace();
+            return "服务端错误，请联系管理员";
+        } catch (IOException e) {
+            System.err.println("文件接收失败");
+            e.printStackTrace();
+            return "服务端错误，请联系管理员";
+        }
+
+        String result = writeFile(file);
+
+        if (result != null) {
+            System.out.println("查询信息导出xls文件成功");
+            return result;
+        } else {
+            System.err.println("导出xls文件失败");
+            return "服务端导出xls文件错误，请检查";
+        }
+    }
+
+    /**
+     * 更新行星信息（部分信息已经被修改）
+     * <p>
+     *     需要进行的更新操作（按顺序来）
+     *     1. 计算利息并加到本金上
+     *     2. 更新所有人年龄
+     *     3. 查询所有年龄在70岁以上或者处于死亡状态的，加入销户名单的同时加入其继承人
+     *     4. 对所有待销户用户进行销户和转账操作，所有被销户的用户将财产转移至继承人，若没有继承人，转移给银行
+     * </p>
+     * @param con 数据库连接
+     * @param tables 需要更新的数据表
+     * @param interest 利息率
+     * @param yearPass 是否过了一年，是为真
+     * @return 是否成功执行操作
+     */
+    synchronized public String updatePlanet(Connection con, String tables, double interest,
+                                            boolean yearPass, Planet planetSets) {
+        StringBuilder result = new StringBuilder();
+
+        try {
+            AtomicUpdateMoney o1 = new AtomicUpdateMoney(con, tables, String.valueOf(interest));
+            boolean r1 = o1.updateAllBasedOnPrevious();
+
+            if (!r1) {
+                result.append("本金利息数据更新失败\n");
+            } else {
+                result.append("本金利息数据更新成功\n");
+            }
+
+            // 若是过了一年就更新所有人的年龄（+1）
+            if (yearPass) {
+                AtomicUpdateUser o2 = new AtomicUpdateUser(con, tables);
+                boolean r2 = o2.updateAgeAll();
+                if (!r2) {
+                    result.append("年龄更新失败\n");
+                } else {
+                    result.append("年龄更新成功\n");
+                }
+            }
+
+            // 查询需要销户的人
             LinkedList<HashMap<String, String>> query = new AtomicQueryAll(con, tables,
-                    parseRequest).query();
+                    new ParseRequest("I%death:= TRUE;age:>=70;%")).queryAgeAndDeath("OR");
+
+            // 指定继承人进行财产的继承，同时进行销户操作
+            for (HashMap<String, String> user : query) {
+                result.append(transferMoney(new ParseRequest("D%accountId:" + user.get("accountId") + ";accountId:" +
+                                      user.get("heir") + ";password:" + user.get("password") + ";%"),
+                              con, tables, planetSets))
+                      .append("\n");
+                result.append(delUser(new ParseRequest("G%accountId:" + user.get("accountId") + ";%"),
+                              con, tables, planetSets))
+                      .append("\n");
+            }
+
+            return String.valueOf(result);
         } catch (SQLException e) {
             System.err.println("数据库请求失败");
             e.printStackTrace();
@@ -522,14 +652,67 @@ public class Functions {
 
     /**
      * 生成年终报告并返回给客户端
+     * <p>
+     *     报告内容包括：
+     *     1. 星球当前时间
+     *     2. 利息变更记录
+     *     3. 账户总数
+     *     4. 今年新开户数
+     *     5. 总余额数据
+     *     6. 发生的事件
+     * </p>
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
      * @return 数据库查询信息
      */
-    synchronized public String queryYearlyReport(ParseRequest parseRequest, Connection con, String tables) {
+    synchronized public String queryYearlyReport(ParseRequest parseRequest, Connection con,
+                                                 String tables, Planet planetSets) {
+        File file = new File("./report.pdf");
 
+        try {
+            Document document = new Document();
+            PdfWriter.getInstance(document, new FileOutputStream(file));
+            document.open();
+
+            document.addTitle("年终报告");
+            document.add(new Paragraph("星球时间：" + planetSets.getPlanetTime()));
+
+            LinkedList<Double> interests = BankData.getInterest(planetSets.getYear());
+            StringBuilder value = new StringBuilder("今年利息变化：\n");
+            for (Double interest : interests) {
+                value.append(interest).append("-->\n");
+            }
+            document.add(new Paragraph(String.valueOf(value)));
+
+            LinkedList<HashMap<String, String>> query = new AtomicQueryAll(con, tables, parseRequest).queryOneForAll("money");
+            document.add(new Paragraph("账户总数：" + query.size()));
+            BigDecimal sum = new BigDecimal(0);
+            for (HashMap<String, String> record : query) {
+                sum = sum.add(BigDecimal.valueOf(Double.parseDouble(record.get("money"))));
+            }
+            document.add(new Paragraph("余额总数：" + sum));
+            document.add(new Paragraph("今年新开账号数：" + BankData.getNewUsers(planetSets.getYear())));
+
+            LinkedList<SingleEvent> events = BankData.getEvents(planetSets.getYear());
+            value = new StringBuilder("今年发生事件");
+            for (SingleEvent event : events) {
+                value.append(event.getDescription()).append("\n");
+            }
+            document.add(new Paragraph(String.valueOf(value)));
+            document.close();
+
+            return writeFile(file);
+
+        } catch (DocumentException | FileNotFoundException e) {
+            System.err.println("PDF生成错误，请检查");
+            e.printStackTrace();
+            return "PDF生成错误，请联系管理员";
+        } catch (SQLException e) {
+            System.err.println("数据库请求失败");
+            e.printStackTrace();
+            return "数据库请求失败";
+        }
     }
-
 
 }

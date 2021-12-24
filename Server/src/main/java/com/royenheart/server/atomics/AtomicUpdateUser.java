@@ -24,6 +24,13 @@ public class AtomicUpdateUser extends AtomicOperations {
         this.updates = updates;
     }
 
+    public AtomicUpdateUser(Connection con, String tables) {
+        this.con = con;
+        this.tables = tables;
+        this.accountId = null;
+        this.updates = null;
+    }
+
     /**
      * 单个用户信息更新
      * @return 是否更新成功
@@ -36,5 +43,19 @@ public class AtomicUpdateUser extends AtomicOperations {
                 this.put("accountId", accountId);
             }
         }, updates);
+    }
+
+    /**
+     * 更新所有人的年龄，新年一到就更新年龄
+     * @return 是否更新成功
+     * @throws SQLException 数据库请求错误
+     */
+    public boolean updateAgeAll() throws SQLException {
+        DatabaseUpdateUser o1 = (DatabaseUpdateUser) OPERATIONS.get("uu");
+        return o1.executeSqlNoConditionBasedOnPrevious(con, tables, new HashMap<String, String>(){
+            {
+                this.put("money", "1");
+            }
+        });
     }
 }

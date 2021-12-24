@@ -24,6 +24,13 @@ public class AtomicUpdateMoney extends AtomicOperations {
         this.money = money;
     }
 
+    public AtomicUpdateMoney(Connection con, String tables, String money) {
+        this.con = con;
+        this.tables = tables;
+        this.money = money;
+        this.accountId = "";
+    }
+
     /**
      * 单个用户余额更新
      * @return 是否更新成功
@@ -36,6 +43,21 @@ public class AtomicUpdateMoney extends AtomicOperations {
                     this.put("money", money);}},
                 new HashMap<String, String>(){{
                     this.put("accountId", accountId);}});
+    }
+
+    /**
+     * 全部用户余额更新，且基于先前的值乘法运算
+     * @return
+     * @throws SQLException
+     */
+    public boolean updateAllBasedOnPrevious() throws SQLException {
+        DatabaseMoneyUpdate o1 = (DatabaseMoneyUpdate) OPERATIONS.get("mu");
+        return o1.executeSqlAllBasedOnPrevious(con, tables,
+                new HashMap<String, String>(){
+                    {
+                        this.put("money", money);
+                    }
+                });
     }
 
 }

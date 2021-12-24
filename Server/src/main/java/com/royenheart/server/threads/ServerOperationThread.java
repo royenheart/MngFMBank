@@ -1,5 +1,6 @@
 package com.royenheart.server.threads;
 
+import com.royenheart.basicsets.programsettings.Planet;
 import com.royenheart.basicsets.programsettings.Server;
 import com.royenheart.server.DatabaseLink;
 import com.royenheart.server.Functions;
@@ -35,11 +36,13 @@ public class ServerOperationThread extends ServerThread implements Runnable {
 
     private DataOutputStream out;
     private DataInputStream in;
+    private final Planet planetSets;
     private final InetAddress clientAddress;
     private boolean login;
 
-    public ServerOperationThread(Socket socket, Server serverSets) {
+    public ServerOperationThread(Socket socket, Server serverSets, Planet planetSets) {
         super(socket, serverSets);
+        this.planetSets = planetSets;
         clientAddress = socket.getInetAddress();
         login = false;
         try {
@@ -69,6 +72,12 @@ public class ServerOperationThread extends ServerThread implements Runnable {
                 } else {
                     System.err.println("请求不符合规范，请求退回");
                     out.writeUTF("请求错误");
+                    continue;
+                }
+
+                if ("Z".equals(parseMachine.getRegFunc())) {
+                    System.out.println("时间同步");
+                    out.writeUTF(planetSets.getPlanetTime());
                     continue;
                 }
 

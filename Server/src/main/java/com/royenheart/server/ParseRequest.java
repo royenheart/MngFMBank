@@ -18,11 +18,11 @@ public class ParseRequest {
      * 提取请求前段表示功能的字符串
      */
     private static final String REG_FUNC = "^[a-zA-Z]+(?=%)";
-    private static final String REG_NAME = "name:[^;\\f\\n\\rt\\t]+;";
+    private static final String REG_NAME = "name:[^;\\f\\n\\r\\t]+;";
     private static final String REG_AGE = "age:[0-9]+;";
     private static final String REG_SEX_BOOLEAN = "(sex:true;)|(sex:false;)";
     private static final String REG_SEX_STRING = "(sex:m;)|(sex:f;)";
-    private static final String REG_PASSWD = "password:[^;\\f\\n\\rt\\t]+;";
+    private static final String REG_PASSWD = "password:[^;\\f\\n\\r\\t]+;";
     private static final String REG_PHONE = "phone:[0-9]{11};";
     private static final String REG_MONEY = "(money:[0-9]+;)|(money:[0-9]+\\.[0-9]+;)";
     private static final String REG_DEATH = "(death:true;)|(death:false;)";
@@ -30,7 +30,7 @@ public class ParseRequest {
     private static final String REG_ACCOUNTID = "accountId:[0-9]{10};";
     private static final String REG_PERSONALID = "personalId:[0-9]{12};";
     private static final String REG_HEIR = "heir:[0-9]{10};";
-    private static final String REG_TABLE = "table:[^;\\f\\n\\rt\\t]+;";
+    private static final String REG_TABLE = "table:[^;\\f\\n\\r\\t]+;";
     /**
      * 匹配字符串中的字节数组
      */
@@ -39,19 +39,19 @@ public class ParseRequest {
 
     // 带条件判断的键值对
 
-    private static final String REG_AGE_CONDITION = "age:[^;\\f\\n\\rt\\t]+[0-9]+;";
+    private static final String REG_AGE_CONDITION = "age:[^;\\f\\n\\r\\t]+[0-9]+;";
     private static final String REG_SEX_BOOLEAN_CONDITION =
-            "(sex:[^;\\f\\n\\rt\\t]+true;)|(sex:[^;\\f\\n\\rt\\t]+false;)";
-    private static final String REG_SEX_STRING_CONDITION = "(sex:[^;\\f\\n\\rt\\t]+m;)|(sex:[^;\\f\\n\\rt\\t]+f;)";
-    private static final String REG_PHONE_CONDITION = "phone:[^;\\f\\n\\rt\\t]+[0-9]{11};";
+            "(sex:[^;\\f\\n\\r\\t]+true;)|(sex:[^;\\f\\n\\r\\t]+false;)";
+    private static final String REG_SEX_STRING_CONDITION = "(sex:[^;\\f\\n\\r\\t]+m;)|(sex:[^;\\f\\n\\r\\t]+f;)";
+    private static final String REG_PHONE_CONDITION = "phone:[^;\\f\\n\\r\\t]+[0-9]{11};";
     private static final String REG_MONEY_CONDITION =
-            "(money:[^;\\f\\n\\rt\\t]+[0-9]+;)|(money:[^;\\f\\n\\rt\\t]+[0-9]+\\.[0-9]+;)";
+            "(money:[^;\\f\\n\\r\\t]+[0-9]+;)|(money:[^;\\f\\n\\r\\t]+[0-9]+\\.[0-9]+;)";
     private static final String REG_DEATH_CONDITION =
-            "(death:[^;\\f\\n\\rt\\t]+true;)|(death:[^;\\f\\n\\rt\\t]+false;)";
-    private static final String REG_BIRTH_CONDITION = "birth:[^;\\f\\n\\rt\\t]+[0-9]+-[0-9]+-[0-9]+;";
-    private static final String REG_ACCOUNTID_CONDITION = "accountId:[^;\\f\\n\\rt\\t]+[0-9]{10};";
-    private static final String REG_PERSONALID_CONDITION = "personalId:[^;\\f\\n\\rt\\t]+[0-9]{12};";
-    private static final String REG_HEIR_CONDITION = "heir:[^;\\f\\n\\rt\\t]+[0-9]{10};";
+            "(death:[^;\\f\\n\\r\\t]+true;)|(death:[^;\\f\\n\\rt\\t]+false;)";
+    private static final String REG_BIRTH_CONDITION = "birth:[^;\\f\\n\\r\\t]+[0-9]+-[0-9]+-[0-9]+;";
+    private static final String REG_ACCOUNTID_CONDITION = "accountId:[^;\\f\\n\\r\\t]+[0-9]{10};";
+    private static final String REG_PERSONALID_CONDITION = "personalId:[^;\\f\\n\\r\\t]+[0-9]{12};";
+    private static final String REG_HEIR_CONDITION = "heir:[^;\\f\\n\\r\\t]+[0-9]{10};";
 
     private final boolean legal;
     private String content;

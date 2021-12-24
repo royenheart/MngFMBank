@@ -48,12 +48,12 @@ public class Functions {
      */
     synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
-            if (parseRequest.getRegAccountId() == null) {
-                System.err.println("accountId字段不存在");
-                return "请求accountId字段不存在";
+            if (parseRequest.getRegAccountId() == null || parseRequest.getRegPasswd() == null) {
+                System.err.println("accountId或password字段不存在");
+                return "请求accountId或password字段不存在";
             }
 
-            // 查询转出人密码是否匹配
+            // 查询人密码是否匹配
             LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
                     parseRequest.getRegAccountId()).query();
             if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
@@ -82,9 +82,12 @@ public class Functions {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
                 return "accountId或money字段缺失";
+            } else if (parseRequest.getRegPasswd() == null) {
+                System.err.println("password缺失");
+                return "password缺失";
             }
 
-            // 查询转出人密码是否匹配
+            // 查询取钱人密码是否匹配
             LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
                     parseRequest.getRegAccountId()).query();
             if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
@@ -126,9 +129,20 @@ public class Functions {
             if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
                 System.err.println("accountId或money字段缺失");
                 return "accountId或money字段缺失";
+            } else if (parseRequest.getRegPasswd() == null) {
+                System.err.println("password缺失");
+                return "password缺失";
             }
 
-            LinkedList<HashMap<String, String>> query = new AtomicQueryMoney(con, tables,
+            // 查询存钱人密码是否匹配
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
+                    parseRequest.getRegAccountId()).query();
+            if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
+                System.err.println("密码不匹配，无法进行转账");
+                return "密码不匹配，无法取钱";
+            }
+
+            query = new AtomicQueryMoney(con, tables,
                     parseRequest.getRegAccountId()).query();
             double currentMoney = Double.parseDouble(query.getFirst().get("money"));
             double putMoney = Double.parseDouble(parseRequest.getRegMoney());
@@ -147,6 +161,10 @@ public class Functions {
             System.err.println("数据库请求失败");
             e.printStackTrace();
             return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("存款人ID不存在");
+            e.printStackTrace();
+            return "存款人ID不存在";
         }
     }
 
@@ -211,6 +229,10 @@ public class Functions {
             System.err.println("数据库请求失败");
             e.printStackTrace();
             return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("转出人或转入人ID不存在");
+            e.printStackTrace();
+            return "转出人或转入人ID不存在";
         }
     }
 
@@ -226,6 +248,17 @@ public class Functions {
             if (parseRequest.accountIdWithOthers()) {
                 System.err.println("请求字段缺失，至少需要accountid和用户信息字段中的一个");
                 return "请求字段缺失，至少需要accountid和用户信息字段中的一个";
+            } else if (parseRequest.getRegPasswd() == null) {
+                System.err.println("password缺失");
+                return "password缺失";
+            }
+
+            // 修改人提供密码是否匹配
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
+                    parseRequest.getRegAccountId()).query();
+            if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
+                System.err.println("密码不匹配，无法进行转账");
+                return "密码不匹配，无法取钱";
             }
 
             HashMap<String, String> updates = new HashMap<>();
@@ -313,9 +346,20 @@ public class Functions {
         if (parseRequest.getRegAccountId() == null) {
             System.err.println("未指定删除用户");
             return "未指定删除用户";
+        } else if (parseRequest.getRegPasswd() == null) {
+            System.err.println("password缺失");
+            return "password缺失";
         }
 
         try {
+            // 修改人提供密码是否匹配
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
+                    parseRequest.getRegAccountId()).query();
+            if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
+                System.err.println("密码不匹配，无法进行转账");
+                return "密码不匹配，无法取钱";
+            }
+
             boolean success = new AtomicDelUser(con, tables, parseRequest.getRegAccountId()).delete();
             if (success) {
                 return "用户删除成功";
@@ -358,6 +402,10 @@ public class Functions {
             System.err.println("数据库请求失败");
             e.printStackTrace();
             return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("请求登录密码出错，已拒绝");
+            e.printStackTrace();
+            return "登录失败";
         }
     }
 

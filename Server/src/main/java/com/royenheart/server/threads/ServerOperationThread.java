@@ -100,7 +100,7 @@ public class ServerOperationThread extends ServerThread implements Runnable {
 
                 // 传入解析器，功能对象，数据库连接，数据表（默认为Users）
                 String result = (String) FUNC.get(parseMachine.getRegFunc().toUpperCase()).invoke(Functions.getMe(),
-                        parseMachine, newCon, "Users");
+                        parseMachine, newCon, "Users", planetSets);
                 if (result != null) {
                     System.out.println("请求指定操作成功");
                 } else {

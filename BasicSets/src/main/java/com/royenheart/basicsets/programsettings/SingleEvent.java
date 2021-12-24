@@ -13,9 +13,9 @@ public class SingleEvent {
     @Expose
     private final String description;
     @Expose
-    private final LinkedHashMap<String, Integer> effects;
+    private final LinkedHashMap<String, Double> effects;
 
-    public SingleEvent(String description, LinkedHashMap<String, Integer> effects) {
+    public SingleEvent(String description, LinkedHashMap<String, Double> effects) {
         this.description = description;
         this.effects = effects;
     }
@@ -28,15 +28,15 @@ public class SingleEvent {
         int effect;
 
         try {
-            effect = effects.get(String.valueOf(EventPattern.effWars));
+            effect = effects.get(String.valueOf(EventPattern.effWars)).intValue();
         } catch (NullPointerException e) {
             effect = 0;
         }
         return effect;
     }
 
-    public int getEffEcoRate()  {
-        int effect;
+    public double getEffEcoRate()  {
+        double effect;
 
         try {
             effect = effects.get(String.valueOf(EventPattern.effEcoRate));
@@ -46,8 +46,8 @@ public class SingleEvent {
         return effect;
     }
 
-    public int getEffBubble()  {
-        int effect;
+    public double getEffBubble()  {
+        double effect;
 
         try {
             effect = effects.get(String.valueOf(EventPattern.effBubble));
@@ -57,8 +57,8 @@ public class SingleEvent {
         return effect;
     }
 
-    public int getEffBankWill()  {
-        int effect;
+    public double getEffBankWill()  {
+        double effect;
 
         try {
             effect = effects.get(String.valueOf(EventPattern.effBankWill));
@@ -68,8 +68,8 @@ public class SingleEvent {
         return effect;
     }
 
-    public int getEffInvestFire()  {
-        int effect;
+    public double getEffInvestFire()  {
+        double effect;
 
         try {
             effect = effects.get(String.valueOf(EventPattern.effInvestFire));

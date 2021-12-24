@@ -1,12 +1,14 @@
-[
-  {
-    "description": "test1",
-    "effects": {
-      "effWars": -3,
-      "effBubble": 0.2,
-      "effEcoRate": 0.2,
-      "effBankWill": 0.2,
-      "effInvestFire": 0.5
+{
+  "events": [
+    {
+      "description": "test1",
+      "effects": {
+        "effWars": -3,
+        "effBubble": 0.2,
+        "effEcoRate": 0.2,
+        "effBankWill": 0.2,
+        "effInvestFire": 0.5
+      }
     }
-  }
-]
+  ]
+}

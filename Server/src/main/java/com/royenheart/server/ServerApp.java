@@ -105,7 +105,7 @@ public class ServerApp {
         LISTEN_CONNECT.submit(new ServerRequestThread(server, serverSets, planetSets));
 
         // 添加星球时间（每24分钟，即一分钟对应1小时进行星球时间的刷新，相当于1天）
-        TIMER.scheduleAtFixedRate(new ServerTimeThread(serverSets, planetSets, eventsSets), 0, 24, TimeUnit.MINUTES);
+        TIMER.scheduleAtFixedRate(new ServerTimeThread(serverSets, planetSets, eventsSets), 24, 24, TimeUnit.MINUTES);
 
         // 持续监听端口，处理请求的连接
         Planet finalPlanetSets = planetSets;

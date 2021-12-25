@@ -1,8 +1,8 @@
 package com.royenheart.client;
 
 import com.royenheart.basicsets.jsonsettings.ClientJsonReader;
+import com.royenheart.basicsets.jsonsettings.ClientJsonWriter;
 import com.royenheart.basicsets.programsettings.Client;
-import com.royenheart.basicsets.programsettings.Planet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,18 +20,29 @@ public class Connection {
 
     private static DataInputStream in;
     private static DataOutputStream out;
-    private static final Socket socket = new Socket();
-    private static final Client clientSets = new ClientJsonReader().getClientFromSets();
+    private static Socket socket = new Socket();
+    private static final Client CLIENT_SETS = new ClientJsonReader().getClientFromSets();
+    private static boolean useAdmin;
+
+    public static boolean getUseAdmin() {
+        return useAdmin;
+    }
 
     public static String getIp() {
-        return clientSets.getIp();
+        return CLIENT_SETS.getIp();
     }
 
     public static String getPort() {
-        return clientSets.getPort();
+        return CLIENT_SETS.getPort();
     }
 
-    public static void socketConnect(InetSocketAddress socketAddress) {
+    /**
+     * 根据套接字地址连接服务器，同时指明是管理员模式还是普通用户
+     * @param socketAddress 套接字地址
+     * @param admin 是否以管理员模式登录
+     */
+    public static void socketConnect(InetSocketAddress socketAddress, boolean admin) {
+        useAdmin = admin;
         try {
             if (socket.isConnected()) {
                 System.err.println("重新进行连接");
@@ -62,8 +73,23 @@ public class Connection {
         return new DataOutputStream(socket.getOutputStream());
     }
 
+    public static void storeClientSets() {
+        new ClientJsonWriter().store(CLIENT_SETS);
+    }
+
     public static boolean socketConnectionStatus() {
         return socket.isConnected();
+    }
+
+    public static void socketDisconnection() {
+        try {
+            in.close();
+            out.close();
+            socket.close();
+            socket = new Socket();
+        } catch (IOException e) {
+            System.err.println("连接已丢失");
+        }
     }
 
 }

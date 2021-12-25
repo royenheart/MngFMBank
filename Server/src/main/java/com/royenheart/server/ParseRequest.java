@@ -34,7 +34,7 @@ public class ParseRequest {
     /**
      * 匹配字符串中的字节数组
      */
-    private static final String REG_BYTES = "\\[([0-9]+,{0,1})+\\]";
+    private static final String REG_BYTES = "\\[([-]{0,1}[0-9]+,{0,1})+\\]";
     private static final String REG_VALUE = "(?<=:).*(?=;)";
 
     // 带条件判断的键值对
@@ -116,8 +116,13 @@ public class ParseRequest {
         return getRegV(REG_MONEY, "money");
     }
 
+    /**
+     * 获取字段中用户存活状态，默认为存活
+     * @return true/false自动转译成1/0
+     */
     public String getRegDeath() {
-        return getRegV(REG_DEATH, "death");
+        String result = getRegV(REG_DEATH, "death");
+        return "true".equalsIgnoreCase(result)?"1":"0";
     }
 
     public String getRegBirth() {
@@ -193,10 +198,31 @@ public class ParseRequest {
 
         if (mStart == 0) {
             System.err.println("字段accountid未找到");
-            return null;
-        } else {
-            return accountIds;
         }
+
+        return accountIds;
+    }
+
+    /**
+     * 匹配多个密码，用于修改密码
+     * @return 以LinkedList存储的password
+     */
+    public LinkedList<String> getRegMulPassword() {
+        Pattern r = Pattern.compile(REG_PASSWD, Pattern.CASE_INSENSITIVE);
+        Matcher m = r.matcher(content);
+        LinkedList<String> accountIds = new LinkedList<>();
+
+        int mStart = 0;
+        while (m.find(mStart)) {
+            mStart = m.end();
+            accountIds.add(getRegV(m.group()));
+        }
+
+        if (mStart == 0) {
+            System.err.println("字段password未找到");
+        }
+
+        return accountIds;
     }
 
     /**
@@ -216,10 +242,9 @@ public class ParseRequest {
 
         if (mStart == 0) {
             System.err.println("空文件");
-            return null;
-        } else {
-            return bytes;
         }
+
+        return bytes;
     }
 
     public String getRegFunc() {
@@ -230,7 +255,7 @@ public class ParseRequest {
             return m.group();
         } else {
             System.err.println("Field Functions ID Not Found!");
-            return null;
+            return "";
         }
     }
 
@@ -242,7 +267,7 @@ public class ParseRequest {
             return m.group();
         } else {
             System.err.println("字段 " + name + " 未找到");
-            return null;
+            return "";
         }
     }
 
@@ -265,10 +290,10 @@ public class ParseRequest {
             if (m.find()) {
                 return m.group();
             } else {
-                return null;
+                return "";
             }
         } else {
-            return null;
+            return "";
         }
     }
 
@@ -287,7 +312,7 @@ public class ParseRequest {
         if (m.find()) {
             return m.group();
         } else {
-            return null;
+            return "";
         }
     }
 

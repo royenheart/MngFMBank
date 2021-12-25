@@ -37,6 +37,8 @@ public class ServerTimeThread extends ServerThread implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("服务端正在刷新资源中，请勿关闭......");
+
         // 随机产生事件并获取其影响
         SingleEvent happen = eventsSets.getRandomEvent();
         int wars = planetSets.restraintWars(planetSets.getWars() + happen.getEffWars());
@@ -68,7 +70,7 @@ public class ServerTimeThread extends ServerThread implements Runnable {
         }
 
         try {
-            String result = (String) ServerThread.getFUNC().get("L").invoke(Functions.getMe(),
+            String result = (String) ServerThread.getFunc().get("L").invoke(Functions.getMe(),
                     newCon, "Users", interest, yearPass, planetSets);
             newCon.close();
             System.out.println(result);
@@ -79,5 +81,7 @@ public class ServerTimeThread extends ServerThread implements Runnable {
             System.err.println("数据库连接失败");
             e.printStackTrace();
         }
+
+        System.out.println("服务端资源刷新完毕");
     }
 }

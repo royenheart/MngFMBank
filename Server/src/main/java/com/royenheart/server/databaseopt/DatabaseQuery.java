@@ -103,7 +103,12 @@ public class DatabaseQuery extends DatabaseSelect implements DataLimit {
         while (iteratorF.hasNext()) {
             String key = iteratorF.next();
             String value = keyValue.get(key);
-            sql.append(String.format("%s%s\"%s\"", key, value.charAt(0)+value.charAt(1), value.substring(2)));
+            try {
+                sql.append(String.format("%s%s%s\"%s\"", key, value.charAt(0), value.charAt(1), value.substring(2)));
+            } catch (StringIndexOutOfBoundsException e) {
+                // 条件字段未找到，说明没有进行此条件的判断，忽略
+                continue;
+            }
             if (iteratorF.hasNext()) {
                 sql.append(" ").append(link).append(" ");
             } else {

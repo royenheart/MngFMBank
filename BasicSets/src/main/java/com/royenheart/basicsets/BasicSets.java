@@ -16,7 +16,7 @@ import java.util.Scanner;
 public class BasicSets {
 
     /**
-     * 仅作为测试方法，不作为真正方法使用
+     * 仅作为测试方法，实际被服务端调用
      * @param args 参数
      */
     public static void main(String[] args) {
@@ -52,5 +52,50 @@ public class BasicSets {
     }
 
     public BasicSets() {}
+
+    public boolean settings() {
+        Scanner in = new Scanner(System.in);
+
+        ClientJsonReader a = new ClientJsonReader();
+        Client client = a.getClientFromSets();
+        ServerJsonReader b = new ServerJsonReader();
+        Server server = b.getServerFromSets();
+
+        System.out.println("The Server ip is " + server.getIp());
+        System.out.println("Want to change it?(y/n)");
+        String tmp = in.nextLine();
+        if ("y".equals(tmp)) {
+            System.out.println("Now insert the new port you want to open your server");
+            server.setIp(in.nextLine());
+        }
+
+        System.out.println("The Server port is " + server.getPort());
+        System.out.println("Want to change it?(y/n)");
+        tmp = in.nextLine();
+        if ("y".equals(tmp)) {
+            System.out.println("Now insert the new port you want to open your server");
+            server.setIp(in.nextLine());
+        }
+
+        ClientJsonWriter as = new ClientJsonWriter();
+        as.store(client);
+        ServerJsonWriter bs = new ServerJsonWriter();
+        bs.store(server);
+
+        System.out.println("Settings over and functions test success");
+        return false;
+    }
+
+    public String getHelp() {
+        return "" +
+                "help - show helps\n" +
+                "settings - set the server\n" +
+                "quit - shut server down\n";
+    }
+
+    public String getTip() {
+        return "Using help to show commands";
+    }
+
 
 }

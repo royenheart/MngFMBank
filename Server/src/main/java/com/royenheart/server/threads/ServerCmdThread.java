@@ -1,5 +1,7 @@
 package com.royenheart.server.threads;
 
+import com.royenheart.basicsets.BasicSets;
+
 import java.util.Scanner;
 
 /**
@@ -12,20 +14,26 @@ import java.util.Scanner;
  */
 public class ServerCmdThread extends ServerThread implements Runnable {
 
-    private boolean quit;
+    private String cmd;
     private final Scanner in;
 
     public ServerCmdThread() {
         super();
-        this.quit = false;
+        this.cmd = "";
         in = new Scanner(System.in);
     }
 
     @Override
     public void run() {
-        while (!quit) {
-            String cmd = in.nextLine();
-            quit = "quit".equals(cmd);
+        BasicSets sets = new BasicSets();
+        while (!"quit".equals(cmd)) {
+            cmd = in.nextLine();
+            switch (cmd) {
+                case "help": System.out.println(sets.getHelp());break;
+                case "settings": System.out.println(sets.settings()?"设置成功，退出":"设置失败，请检查资源完整性");break;
+                case "quit": break;
+                default: System.out.println(sets.getTip());break;
+            }
         }
 
         System.out.println("等待服务端所有线程完成");

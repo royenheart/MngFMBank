@@ -16,13 +16,16 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.NumberToTextConverter;
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -67,6 +70,10 @@ public class Functions {
             System.err.println("数据库请求失败");
             e.printStackTrace();
             return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("查询人ID不存在");
+            e.printStackTrace();
+            return "查询人ID不存在";
         }
     }
 
@@ -100,7 +107,7 @@ public class Functions {
             double currentMoney = Double.parseDouble(query.getFirst().get("money"));
             double fetchMoney = Double.parseDouble(parseRequest.getRegMoney());
             if (currentMoney < fetchMoney) {
-                return "当前余额: " + currentMoney + ",您没有这么多钱";
+                return "当前余额: " + currentMoney + "，无法取钱";
             }
 
             boolean success = new AtomicUpdateMoney(con, tables, parseRequest.getRegAccountId(),
@@ -114,6 +121,10 @@ public class Functions {
             System.err.println("数据库请求失败");
             e.printStackTrace();
             return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("取款人ID不存在");
+            e.printStackTrace();
+            return "取款人ID不存在";
         }
     }
 
@@ -147,7 +158,7 @@ public class Functions {
             double currentMoney = Double.parseDouble(query.getFirst().get("money"));
             double putMoney = Double.parseDouble(parseRequest.getRegMoney());
             if (currentMoney + putMoney > User.MAX_MONEY) {
-                return "存放后余额将为: " + (currentMoney + putMoney) + ",超出存放上限，请少存点";
+                return "存放后余额将为: " + (currentMoney + putMoney) + "，无法进行存钱";
             }
 
             boolean success = new AtomicUpdateMoney(con, tables, parseRequest.getRegAccountId()
@@ -208,7 +219,7 @@ public class Functions {
             if (transferMoney > outCurrentMoney) {
                 return "转出人钱数不够";
             } else if (transferMoney + inCurrentMoney > User.MAX_MONEY) {
-                return "转入人钱数将超出上线，请转少一点";
+                return "转入人钱数将超出上限，请联系转入人或减少转账额度";
             } else {
                 boolean success1 = new AtomicUpdateMoney(con, tables, mulAccountId.get(0),
                         String.valueOf(outCurrentMoney - transferMoney)).update();
@@ -257,8 +268,8 @@ public class Functions {
             LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
                     parseRequest.getRegAccountId()).query();
             if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
-                System.err.println("密码不匹配，无法进行转账");
-                return "密码不匹配，无法取钱";
+                System.err.println("密码不匹配，信息无法进行修改");
+                return "密码不匹配，信息无法进行修改";
             }
 
             HashMap<String, String> updates = new HashMap<>();
@@ -283,6 +294,56 @@ public class Functions {
             System.err.println("数据库请求失败");
             e.printStackTrace();
             return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("待修改用户ID不存在");
+            e.printStackTrace();
+            return "待修改用户ID不存在";
+        }
+    }
+
+    /**
+     * 用户密码更改
+     * @param parseRequest 用户请求解析其器
+     * @param con 数据库连接
+     * @param tables 使用数据表（默认Users）
+     * @param planetSets 行星数据
+     * @return 记录更新信息
+     */
+    synchronized public String editPasswd(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
+        try {
+            LinkedList<String> passwords;
+            passwords = parseRequest.getRegMulPassword();
+            if (passwords == null || parseRequest.getRegAccountId() == null || parseRequest.getRegTable() == null) {
+                System.err.println("用户请求字段缺失");
+                return "用户请求字段缺失";
+            }
+
+            // 修改人提供密码是否匹配
+            LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, parseRequest.getRegTable(),
+                    parseRequest.getRegAccountId()).query();
+            if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(passwords.get(0))) {
+                System.err.println("原密码不匹配，身份认证失败");
+                return "原密码不匹配";
+            }
+
+            HashMap<String, String> updates = new HashMap<>();
+            updates.put(String.valueOf(UserPattern.password), passwords.get(1));
+
+            boolean success = new AtomicUpdateUser(con, parseRequest.getRegTable(),
+                    parseRequest.getRegAccountId(), updates).update();
+            if (success) {
+                return "密码修改成功";
+            } else {
+                return "密码修改失败，请检查合法性";
+            }
+        } catch (SQLException e) {
+            System.err.println("数据库请求失败");
+            e.printStackTrace();
+            return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("待修改用户ID不存在");
+            e.printStackTrace();
+            return "待修改用户ID不存在";
         }
     }
 
@@ -370,6 +431,10 @@ public class Functions {
             System.err.println("数据库请求失败");
             e.printStackTrace();
             return "数据库请求失败";
+        } catch (NoSuchElementException e) {
+            System.err.println("待销户人ID不存在");
+            e.printStackTrace();
+            return "待销户人ID不存在";
         }
     }
 
@@ -436,7 +501,7 @@ public class Functions {
             if (rows.hasNext()) {
                 Iterator<Cell> cells = rows.next().cellIterator();
                 LinkedList<String> patterns = new LinkedList<>();
-                // 生成各列对应的字段
+                // 获取各列对应的字段
                 while (cells.hasNext()) {
                     patterns.add(cells.next().getStringCellValue());
                 }
@@ -512,14 +577,14 @@ public class Functions {
      * @return 文件对应的字节数组列表
      */
     synchronized private String writeFile(File file) {
-        byte[] xlsData = new byte[300];
+        byte[] data = new byte[300];
         StringBuilder response = new StringBuilder();
         Gson gson = new Gson();
 
         try (FileInputStream inputStream = new FileInputStream(file);
              DataInputStream dataInputStream = new DataInputStream(inputStream)) {
-            while (dataInputStream.read(xlsData) > 0) {
-                String js = gson.toJson(xlsData).replace(" ", "");
+            while (dataInputStream.read(data) > 0) {
+                String js = gson.toJson(data).replace(" ", "");
                 response.append(js);
             }
         } catch (IOException e) {
@@ -540,14 +605,23 @@ public class Functions {
     synchronized private LinkedList<User> cellsGetUser(Iterator<Row> rows, LinkedList<String> patterns,
                                                        ArrayList<Integer> errors) {
         LinkedList<User> users = new LinkedList<>();
+
+        // 迭代各行，每行生成一个用户，加到用户名单上
         while (rows.hasNext()) {
             Row currentRow = rows.next();
             StringBuilder userPatterns = new StringBuilder().append("F%");
             Iterator<Cell> cells = currentRow.cellIterator();
-            // 遍历excel各列字段
+            // 遍历各单元格对应列是哪个字段
             ListIterator<String> pattern = patterns.listIterator(0);
             while (cells.hasNext()) {
-                userPatterns.append(String.format("%s:%s;", pattern.next(), cells.next().getStringCellValue()));
+                Cell cell = cells.next();
+                String value = "";
+                if (cell.getCellType() == CellType.NUMERIC) {
+                    value = NumberToTextConverter.toText(cell.getNumericCellValue());
+                } else if (cell.getCellType() == CellType.STRING) {
+                    value = cell.getStringCellValue();
+                }
+                userPatterns.append(String.format("%s:%s;", pattern.next(), value));
             }
             userPatterns.append("%");
             ParseRequest parseRequest = new ParseRequest(String.valueOf(userPatterns));
@@ -567,7 +641,7 @@ public class Functions {
 
 
     /**
-     * 将特定查询信息导出为xls文件，先查询，再根据查询结果创建xls文件对象
+     * 将特定查询信息导出为xls文件，先查询，再根据查询结果创建xls文件对象，最后返回给客户端
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
@@ -636,7 +710,7 @@ public class Functions {
     }
 
     /**
-     * 更新行星信息（部分信息已经被修改）
+     * 更新行星信息（部分信息已经被修改）（不对客户端开放）
      * <p>
      *     需要进行的更新操作（按顺序来）
      *     1. 计算利息并加到本金上
@@ -716,34 +790,46 @@ public class Functions {
      */
     synchronized public String queryYearlyReport(ParseRequest parseRequest, Connection con,
                                                  String tables, Planet planetSets) {
-        File file = new File("./report.pdf");
+        File file = new File("./report" + new SimpleDateFormat("yyyy").format(new Date()) + ".pdf");
 
         try {
+            boolean rm = true;
+            if (file.exists()) {
+                rm = file.delete();
+            }
+
+            if (!rm) {
+                System.err.println("删除旧报告文件错误，请检查服务器IO状态");
+                return "服务器IO错误，请联系管理员";
+            }
+
             Document document = new Document();
             PdfWriter.getInstance(document, new FileOutputStream(file));
             document.open();
 
-            document.addTitle("年终报告");
-            document.add(new Paragraph("星球时间：" + planetSets.getPlanetTime()));
+            document.addTitle("Year Report");
+            document.add(new Paragraph("Planet Time : " + planetSets.getPlanetTime()));
 
             LinkedList<Double> interests = BankData.getInterest(planetSets.getYear());
-            StringBuilder value = new StringBuilder("今年利息变化：\n");
+            StringBuilder value = new StringBuilder();
+            value.append("Yearly Interest changes: \n");
             for (Double interest : interests) {
                 value.append(interest).append("-->\n");
             }
             document.add(new Paragraph(String.valueOf(value)));
 
             LinkedList<HashMap<String, String>> query = new AtomicQueryAll(con, tables, parseRequest).queryOneForAll("money");
-            document.add(new Paragraph("账户总数：" + query.size()));
+            document.add(new Paragraph("Account Amounts : " + query.size()));
             BigDecimal sum = new BigDecimal(0);
             for (HashMap<String, String> record : query) {
                 sum = sum.add(BigDecimal.valueOf(Double.parseDouble(record.get("money"))));
             }
-            document.add(new Paragraph("余额总数：" + sum));
-            document.add(new Paragraph("今年新开账号数：" + BankData.getNewUsers(planetSets.getYear())));
+            document.add(new Paragraph("Money Sum : " + sum));
+            document.add(new Paragraph("Yearly new Accounts : " + BankData.getNewUsers(planetSets.getYear())));
 
             LinkedList<SingleEvent> events = BankData.getEvents(planetSets.getYear());
-            value = new StringBuilder("今年发生事件");
+            value = new StringBuilder();
+            value.append("Things Happen this year : \n");
             for (SingleEvent event : events) {
                 value.append(event.getDescription()).append("\n");
             }
@@ -751,7 +837,6 @@ public class Functions {
             document.close();
 
             return writeFile(file);
-
         } catch (DocumentException | FileNotFoundException e) {
             System.err.println("PDF生成错误，请检查");
             e.printStackTrace();

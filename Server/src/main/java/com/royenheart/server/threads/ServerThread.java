@@ -25,7 +25,7 @@ abstract public class ServerThread {
      * 方便其他类获取方法
      * @return 方法键值对
      */
-    public static HashMap<String, Method> getFUNC() {
+    public static HashMap<String, Method> getFunc() {
         return FUNC;
     }
 
@@ -65,6 +65,8 @@ abstract public class ServerThread {
                     String.class, Planet.class));
             FUNC.put("L", Functions.class.getMethod("updatePlanet", Connection.class, String.class, double.class,
                     boolean.class, Planet.class));
+            FUNC.put("P", Functions.class.getMethod("editPasswd", ParseRequest.class, Connection.class, String.class,
+                    Planet.class));
         } catch (NoSuchMethodException e) {
             System.err.println("无对应方法，请检查对应语句");
             e.printStackTrace();

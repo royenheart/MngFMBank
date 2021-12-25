@@ -135,6 +135,10 @@ public class CalculateApi {
                     return false;
                 }
             }
+            // 密码不得是数字类型
+            if (passwd.matches("(^[0-9]+$)|(^[0-9]+\\.[0-9]+$)")) {
+                return false;
+            }
             // 密码不得出现空白字符
             return passwd.matches("[^\f\n\r\t]+");
         }

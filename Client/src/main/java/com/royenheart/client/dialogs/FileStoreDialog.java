@@ -12,9 +12,7 @@ import java.io.File;
 public class FileStoreDialog extends JFileChooser {
 
     public FileStoreDialog(String defaultFileName) {
-
         setSelectedFile(new File(defaultFileName));
-
     }
 
 }

@@ -1,15 +1,36 @@
 package com.royenheart.basicsets;
 
 import com.royenheart.basicsets.programsettings.User;
+import com.royenheart.basicsets.programsettings.UserPattern;
 
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * 计算模块，用于服务端、客户端数据的计算
  * @author RoyenHeart
  */
 public class CalculateApi {
+
+    private static final HashMap<String, String> MOD_FUNC = new HashMap<>();
+
+    static {
+        MOD_FUNC.put(String.valueOf(UserPattern.accountId), "legalAccountId");
+        MOD_FUNC.put(String.valueOf(UserPattern.personalId), "legalPersonalId");
+        MOD_FUNC.put(String.valueOf(UserPattern.age), "legalAge");
+        MOD_FUNC.put(String.valueOf(UserPattern.name), "legalName");
+        MOD_FUNC.put(String.valueOf(UserPattern.sex), "legalSex");
+        MOD_FUNC.put(String.valueOf(UserPattern.password), "legalPassword");
+        MOD_FUNC.put(String.valueOf(UserPattern.heir), "legalHeir");
+        MOD_FUNC.put(String.valueOf(UserPattern.money), "legalMoney");
+        MOD_FUNC.put(String.valueOf(UserPattern.phone), "legalPhone");
+        MOD_FUNC.put(String.valueOf(UserPattern.death), "legalDeath");
+        MOD_FUNC.put(String.valueOf(UserPattern.birth), "legalBirth");
+    }
 
     public CalculateApi() {}
 
@@ -51,6 +72,33 @@ public class CalculateApi {
     }
 
     /**
+     * 检查出生日期是否合法
+     * @param birth 待检查的日期字符串（以yyyy-MM-dd）形式表达
+     * @return 出生日期是否合法
+     */
+    public static boolean legalBirth(String birth) {
+        try {
+            new SimpleDateFormat("yyyy-MM-dd").parse(birth);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
+    /**
+     * 检查性别字段是否合法
+     * @param sex 待检测的性别字段
+     * @return 性别字段是否合法
+     */
+    public static boolean legalSex(String sex) {
+        return "f".equalsIgnoreCase(sex) || "m".equalsIgnoreCase(sex);
+    }
+
+    public static boolean legalDeath(String death) {
+        return "false".equalsIgnoreCase(death) || "true".equalsIgnoreCase(death);
+    }
+
+    /**
      * 检查电话号码是否符合规范
      * @param phone 待检测的电话号码
      * @return 电话号码是否正确
@@ -66,8 +114,9 @@ public class CalculateApi {
      * @param age 待检测的年龄
      * @return 年龄是否符合要求
      */
-    public static boolean legalAge(int age) {
-        return age <= User.MAX_AGE && age >= User.MIN_AGE;
+    public static boolean legalAge(String age) {
+        int getAge = Integer.parseInt(age);
+        return getAge <= User.MAX_AGE && getAge >= User.MIN_AGE;
     }
 
     /**
@@ -94,8 +143,12 @@ public class CalculateApi {
      * @param money 待检查的钱数
      * @return 钱数是否符合要求
      */
-    public static boolean legalMoney(double money) {
-        return (money >= User.MIN_MONEY) && (money <= User.MAX_MONEY);
+    public static boolean legalMoney(String money) {
+        if (!money.matches("(^[0-9]+$)|(^[0-9]+\\.[0-9]+$)")) {
+            return false;
+        }
+        double getMoney = Double.parseDouble(money);
+        return (getMoney >= User.MIN_MONEY) && (getMoney <= User.MAX_MONEY);
     }
 
     /**
@@ -107,6 +160,15 @@ public class CalculateApi {
         if (accountId.length() != User.ACCOUNT_ID_LEN) {
             return false;
         } else { return accountId.matches("^[0-9]+$"); }
+    }
+
+    /**
+     * 检查继承人账户ID是否合法
+     * @param heir 待检查的继承人账户ID
+     * @return 继承人账户ID是否合法
+     */
+    public static boolean legalHeir(String heir) {
+        return legalAccountId(heir);
     }
 
     /**
@@ -125,7 +187,7 @@ public class CalculateApi {
      * @param passwd 待检查的密码
      * @return 密码是否符合要求
      */
-    public static boolean legalPasswd(String passwd) {
+    public static boolean legalPassword(String passwd) {
         int passwdLength = passwd.length();
         if (passwdLength < User.MIN_PASSWD || passwdLength > User.MAX_PASSWD ) {
             return false;
@@ -142,6 +204,24 @@ public class CalculateApi {
             // 密码不得出现空白字符
             return passwd.matches("[^\f\n\r\t]+");
         }
+    }
+
+    /**
+     * 通过反射调用静态类匹配对应模式对字符串做合法性检测
+     * @param text 待匹配的文本
+     * @param mod 需要对文本进行匹配的模式
+     * @return 返回是否在对应模式下匹配成功
+     * @throws NoSuchMethodException 无此方法，掷出
+     * @throws InvocationTargetException 掷出
+     * @throws IllegalAccessException 非法访问，掷出
+     */
+    public static boolean legalString(String text, String mod) throws
+            NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        String getMod = MOD_FUNC.get(mod);
+        if (getMod == null) {
+            throw new NullPointerException("模式未找到");
+        }
+        return (boolean) CalculateApi.class.getMethod(getMod, String.class).invoke(null, text);
     }
 
     /**

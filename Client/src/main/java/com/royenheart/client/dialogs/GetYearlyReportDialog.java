@@ -19,17 +19,17 @@ public class GetYearlyReportDialog extends JDialog implements Runnable, ActionLi
 
     Thread t1 = null;
     private File file;
-    private JButton chooseButton;
-    private JButton sendButton;
-    private JFrame jf;
-    private JTextArea showResult;
+    private final JButton chooseButton;
+    private final JButton sendButton;
+    private final JFrame jf;
+    private final JTextArea showResult;
     private String request;
 
     public GetYearlyReportDialog(JFrame jf,String title,boolean isModel){
         super(jf, title, isModel);
         this.jf = jf;
         // 主要界面设置
-        this.setBounds(600, 300, 500, 500);
+        this.setBounds(600, 300, 500, 300);
         Box vBox = Box.createVerticalBox();
 
         // show result
@@ -49,10 +49,9 @@ public class GetYearlyReportDialog extends JDialog implements Runnable, ActionLi
         chooseButton.setEnabled(true);
         sendButton.setEnabled(false);
 
-        vBox.add(Box.createVerticalStrut(100));
+        vBox.add(Box.createVerticalStrut(40));
         vBox.add(showResult);
         vBox.add(Box.createVerticalStrut(40));
-        vBox.add(Box.createVerticalStrut(100));
         vBox.add(btnBox);
         vBox.add(Box.createVerticalStrut(40));
 
@@ -104,7 +103,8 @@ public class GetYearlyReportDialog extends JDialog implements Runnable, ActionLi
             FilesOperation filesOperation = new FilesOperation();
             filesOperation.readFile(file, response);
             showResult.append("文件" + file + "已获取\n");
-        }catch (IOException e){
+        } catch (IOException e) {
+            showResult.append("数据导出失败，请检查接收文件是否被其他应用占用\n");
             e.printStackTrace();
         }
     }

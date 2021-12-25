@@ -51,7 +51,7 @@ public class Functions {
      */
     synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
-            if (parseRequest.getRegAccountId() == null || parseRequest.getRegPasswd() == null) {
+            if (Objects.equals(parseRequest.getRegAccountId(), "") || Objects.equals(parseRequest.getRegPasswd(), "")) {
                 System.err.println("accountId或password字段不存在");
                 return "请求accountId或password字段不存在";
             }
@@ -86,10 +86,10 @@ public class Functions {
      */
     synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
-            if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
+            if (Objects.equals(parseRequest.getRegAccountId(), "") || Objects.equals(parseRequest.getRegMoney(), "")) {
                 System.err.println("accountId或money字段缺失");
                 return "accountId或money字段缺失";
-            } else if (parseRequest.getRegPasswd() == null) {
+            } else if (Objects.equals(parseRequest.getRegPasswd(), "")) {
                 System.err.println("password缺失");
                 return "password缺失";
             }
@@ -137,10 +137,10 @@ public class Functions {
      */
     synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
-            if (parseRequest.getRegAccountId() == null || parseRequest.getRegMoney() == null) {
+            if (Objects.equals(parseRequest.getRegAccountId(), "") || Objects.equals(parseRequest.getRegMoney(), "")) {
                 System.err.println("accountId或money字段缺失");
                 return "accountId或money字段缺失";
-            } else if (parseRequest.getRegPasswd() == null) {
+            } else if (Objects.equals(parseRequest.getRegPasswd(), "")) {
                 System.err.println("password缺失");
                 return "password缺失";
             }
@@ -192,10 +192,10 @@ public class Functions {
         if (mulAccountId == null || mulAccountId.size() != 2) {
             System.err.println("转账所需accountid字段不等于2个");
             return "转出人和收账人错误";
-        } else if (parseRequest.getRegMoney() == null) {
+        } else if (Objects.equals(parseRequest.getRegMoney(), "")) {
             System.err.println("未指定钱数");
             return "未指定钱数";
-        } else if (parseRequest.getRegPasswd() == null) {
+        } else if (Objects.equals(parseRequest.getRegPasswd(), "")) {
             System.err.println("转出人密码未提供");
             return "转出人密码未提供";
         }
@@ -248,7 +248,7 @@ public class Functions {
     }
 
     /**
-     * 修改用户信息
+     * 修改用户信息（手机号，名字，死亡情况，继承人）
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
@@ -256,12 +256,15 @@ public class Functions {
      */
     synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
         try {
-            if (parseRequest.accountIdWithOthers()) {
-                System.err.println("请求字段缺失，至少需要accountid和用户信息字段中的一个");
-                return "请求字段缺失，至少需要accountid和用户信息字段中的一个";
-            } else if (parseRequest.getRegPasswd() == null) {
-                System.err.println("password缺失");
-                return "password缺失";
+            if (Objects.equals(parseRequest.getRegAccountId(), "") || Objects.equals(parseRequest.getRegPasswd(), "")) {
+                System.err.println("需要修改人账号ID和密码");
+                return "需要提供账号ID和对应密码";
+            } else if (Objects.equals(parseRequest.getRegName(), "") &&
+                    Objects.equals(parseRequest.getRegPhone(), "") &&
+                    Objects.equals(parseRequest.getRegDeath(), "") &&
+                    Objects.equals(parseRequest.getRegHeir(), "")) {
+                System.err.println("至少提供手机号、名字、死亡状态、继承人中的一个");
+                return "至少提供手机号、名字、死亡状态、继承人中的一个";
             }
 
             // 修改人提供密码是否匹配
@@ -273,15 +276,13 @@ public class Functions {
             }
 
             HashMap<String, String> updates = new HashMap<>();
-            if (parseRequest.getRegName() != null) { updates.put(String.valueOf(UserPattern.name),
+            if (!Objects.equals(parseRequest.getRegName(), "")) { updates.put(String.valueOf(UserPattern.name),
                     parseRequest.getRegName()); }
-            if (parseRequest.getRegPasswd() != null) { updates.put(String.valueOf(UserPattern.password),
-                    parseRequest.getRegPasswd()); }
-            if (parseRequest.getRegPhone() != null) { updates.put(String.valueOf(UserPattern.phone),
+            if (!Objects.equals(parseRequest.getRegPhone(), "")) { updates.put(String.valueOf(UserPattern.phone),
                     parseRequest.getRegPhone()); }
-            if (parseRequest.getRegDeath() != null) { updates.put(String.valueOf(UserPattern.death),
+            if (!Objects.equals(parseRequest.getRegDeath(), "")) { updates.put(String.valueOf(UserPattern.death),
                     parseRequest.getRegDeath()); }
-            if (parseRequest.getRegHeir() != null) { updates.put(String.valueOf(UserPattern.heir),
+            if (!Objects.equals(parseRequest.getRegHeir(), "")) { updates.put(String.valueOf(UserPattern.heir),
                     parseRequest.getRegHeir()); }
 
             boolean success = new AtomicUpdateUser(con, tables, parseRequest.getRegAccountId(), updates).update();
@@ -313,7 +314,8 @@ public class Functions {
         try {
             LinkedList<String> passwords;
             passwords = parseRequest.getRegMulPassword();
-            if (passwords == null || parseRequest.getRegAccountId() == null || parseRequest.getRegTable() == null) {
+            if (passwords == null || passwords.isEmpty() || Objects.equals(parseRequest.getRegAccountId(), "")
+                    || Objects.equals(parseRequest.getRegTable(), "")) {
                 System.err.println("用户请求字段缺失");
                 return "用户请求字段缺失";
             }
@@ -404,10 +406,10 @@ public class Functions {
      * @return 返回更新的信息
      */
     synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
-        if (parseRequest.getRegAccountId() == null) {
+        if (Objects.equals(parseRequest.getRegAccountId(), "")) {
             System.err.println("未指定删除用户");
             return "未指定删除用户";
-        } else if (parseRequest.getRegPasswd() == null) {
+        } else if (Objects.equals(parseRequest.getRegPasswd(), "")) {
             System.err.println("password缺失");
             return "password缺失";
         }
@@ -446,9 +448,10 @@ public class Functions {
      * @return 返回登录的信息，之后对应线程的登录状态设置为真
      */
     synchronized public String login(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
-        if (parseRequest.getRegTable() != null) {
+        if (!Objects.equals(parseRequest.getRegTable(), "")) {
             tables = parseRequest.getRegTable();
-        } else if (parseRequest.getRegAccountId() == null || parseRequest.getRegPasswd() == null) {
+        } else if (Objects.equals(parseRequest.getRegAccountId(), "")
+                || Objects.equals(parseRequest.getRegPasswd(), "")) {
             System.err.println("用户名或者密码字段缺失");
             return "用户名或者密码缺失，请检查表单";
         }

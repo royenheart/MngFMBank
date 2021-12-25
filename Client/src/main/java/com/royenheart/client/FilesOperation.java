@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  */
 public class FilesOperation {
 
-    private static final String REG_BYTES = "\\[([-]{0,1}[0-9]+,{0,1})+\\]";
+    private static final String REG_BYTES = "\\[([-]?[0-9]+,?)+]";
 
     /**
      * 获取字符串中所有的字节数组子串

@@ -16,21 +16,22 @@ import java.io.IOException;
 public class UploadXlsCreateDialog extends JDialog implements Runnable, ActionListener {
 
     Thread t1 = null;
-    private JButton chooseButton;
-    private JButton sendButton;
-    private JFrame jf;
-    private JTextArea showResult;
+    private final JButton chooseButton;
+    private final JButton sendButton;
+    private final JFrame jf;
+    private final JTextArea showResult;
     private String request;
 
     public UploadXlsCreateDialog(JFrame jf,String title,boolean isModel){
         super(jf, title, isModel);
         this.jf = jf;
+
         // 主要界面设置
-        this.setBounds(600,300,500,500);
+        this.setBounds(600, 300, 300, 300);
         Box vBox = Box.createVerticalBox();
 
         // show result
-        showResult = new JTextArea(8,18);
+        showResult = new JTextArea(14,18);
 
         // choose xls button
         Box btnBox = Box.createHorizontalBox();
@@ -46,10 +47,9 @@ public class UploadXlsCreateDialog extends JDialog implements Runnable, ActionLi
         chooseButton.setEnabled(true);
         sendButton.setEnabled(false);
 
-        vBox.add(Box.createVerticalStrut(100));
+        vBox.add(Box.createVerticalStrut(40));
         vBox.add(showResult);
         vBox.add(Box.createVerticalStrut(40));
-        vBox.add(Box.createVerticalStrut(100));
         vBox.add(btnBox);
         vBox.add(Box.createVerticalStrut(40));
 

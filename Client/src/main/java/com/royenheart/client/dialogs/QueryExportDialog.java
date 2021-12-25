@@ -1,15 +1,20 @@
 package com.royenheart.client.dialogs;
 
+import com.royenheart.basicsets.programsettings.UserPattern;
 import com.royenheart.client.Connection;
 import com.royenheart.client.FilesOperation;
+import com.royenheart.client.components.ConditionComboBox;
+import com.royenheart.client.components.NotNullTextField;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * 查询特定信息，服务器将查询信息传回客户端
@@ -21,49 +26,39 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
     private File file;
     private StringBuilder request;
 
-    private JTextField ageText;
-    private JTextField sexText;
-    private JTextField nameText;
-    private JTextField phoneText;
-    private JTextField moneyText;
-    private JTextField birthText;
-    private JTextField personalText;
-    private JTextField heirText;
-    private JButton chooseButton;
-    private JButton sendButton;
-    private JTextArea showResult;
-    private JFrame jf;
+    private final NotNullTextField ageText;
+    private final NotNullTextField sexText;
+    private final NotNullTextField nameText;
+    private final NotNullTextField phoneText;
+    private final NotNullTextField moneyText;
+    private final NotNullTextField birthText;
+    private final NotNullTextField personalText;
+    private final NotNullTextField heirText;
+    private final JButton chooseButton;
+    private final JButton sendButton;
+    private final JTextArea showResult;
+    private final JFrame jf;
 
     String sexInfo, ageInfo, nameInfo, phoneIdInfo, moneyInfo, birthInfo, personalIdInfo, heirInfo;
     String sexCon, ageCon, nameCon, phoneIdCon, moneyCon, birthCon, personalIdCon, heirCon;
 
-    private JRadioButton selAge;
-    private JRadioButton selSex;
-    private JRadioButton selName;
-    private JRadioButton selPhone;
-    private JRadioButton selMoney;
-    private JRadioButton selBirth;
-    private JRadioButton selPersonal;
-    private JRadioButton selHeir;
+    private final JRadioButton selAge;
+    private final JRadioButton selSex;
+    private final JRadioButton selName;
+    private final JRadioButton selPhone;
+    private final JRadioButton selMoney;
+    private final JRadioButton selBirth;
+    private final JRadioButton selPersonal;
+    private final JRadioButton selHeir;
 
-    private JComboBox conAge;
-    private JComboBox conSex;
-    private JComboBox conName;
-    private JComboBox conPhone;
-    private JComboBox conMoney;
-    private JComboBox conBirth;
-    private JComboBox conPersonal;
-    private JComboBox conHeir;
-
-    public JComboBox initComboBox() {
-        JComboBox cmb = new JComboBox();
-        cmb.addItem("< ");
-        cmb.addItem("= ");
-        cmb.addItem("> ");
-        cmb.addItem("<=");
-        cmb.addItem(">=");
-        return cmb;
-    }
+    private final ConditionComboBox conAge;
+    private final ConditionComboBox conSex;
+    private final ConditionComboBox conName;
+    private final ConditionComboBox conPhone;
+    private final ConditionComboBox conMoney;
+    private final ConditionComboBox conBirth;
+    private final ConditionComboBox conPersonal;
+    private final ConditionComboBox conHeir;
 
     public QueryExportDialog(JFrame jf, String title, boolean isModel){
         super(jf, title, isModel);
@@ -98,9 +93,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box ageBox = Box.createHorizontalBox();
         selAge = new JRadioButton("使用");
         JLabel ageLabel = new JLabel("age");
-        ageText = new JTextField(12);
+        ageText = new NotNullTextField(12);
 
-        conAge = initComboBox();
+        conAge = new ConditionComboBox();
 
         ageBox.add(selAge);
         ageBox.add(Box.createHorizontalStrut(20));
@@ -114,9 +109,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box sexBox = Box.createHorizontalBox();
         selSex = new JRadioButton("使用");
         JLabel sexLabel = new JLabel("sex");
-        sexText = new JTextField(12);
+        sexText = new NotNullTextField(12);
 
-        conSex = initComboBox();
+        conSex = new ConditionComboBox();
 
         sexBox.add(selSex);
         sexBox.add(Box.createHorizontalStrut(20));
@@ -130,9 +125,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box nameBox = Box.createHorizontalBox();
         selName = new JRadioButton("使用");
         JLabel nameLabel = new JLabel("name");
-        nameText = new JTextField(12);
+        nameText = new NotNullTextField(12);
 
-        conName = initComboBox();
+        conName = new ConditionComboBox();
 
         nameBox.add(selName);
         nameBox.add(Box.createHorizontalStrut(20));
@@ -146,9 +141,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box phoneIdBox = Box.createHorizontalBox();
         selPhone = new JRadioButton("使用");
         JLabel phoneLabel = new JLabel("phone number");
-        phoneText = new JTextField(12);
+        phoneText = new NotNullTextField(12);
 
-        conPhone = initComboBox();
+        conPhone = new ConditionComboBox();
 
         phoneIdBox.add(selPhone);
         phoneIdBox.add(Box.createHorizontalStrut(20));
@@ -162,9 +157,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box moneyBox = Box.createHorizontalBox();
         selMoney = new JRadioButton("使用");
         JLabel moneyLabel = new JLabel("money");
-        moneyText = new JTextField(12);
+        moneyText = new NotNullTextField(12);
 
-        conMoney = initComboBox();
+        conMoney = new ConditionComboBox();
 
         moneyBox.add(selMoney);
         moneyBox.add(Box.createHorizontalStrut(20));
@@ -178,9 +173,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box birthBox = Box.createHorizontalBox();
         selBirth = new JRadioButton("使用");
         JLabel birthLabel = new JLabel("birth");
-        birthText = new JTextField(12);
+        birthText = new NotNullTextField(12);
 
-        conBirth = initComboBox();
+        conBirth = new ConditionComboBox();
 
         birthBox.add(selBirth);
         birthBox.add(Box.createHorizontalStrut(20));
@@ -194,9 +189,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box personalIdBox = Box.createHorizontalBox();
         selPersonal = new JRadioButton("使用");
         JLabel personalIdLabel = new JLabel("personalId");
-        personalText = new JTextField(12);
+        personalText = new NotNullTextField(12);
 
-        conPersonal = initComboBox();
+        conPersonal = new ConditionComboBox();
 
         personalIdBox.add(selPersonal);
         personalIdBox.add(Box.createHorizontalStrut(20));
@@ -210,9 +205,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
         Box heirBox = Box.createHorizontalBox();
         selHeir = new JRadioButton("使用");
         JLabel heirLabel = new JLabel("heir");
-        heirText = new JTextField(12);
+        heirText = new NotNullTextField(12);
 
-        conHeir = initComboBox();
+        conHeir = new ConditionComboBox();
 
         heirBox.add(selHeir);
         heirBox.add(Box.createHorizontalStrut(20));
@@ -267,23 +262,45 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
                 showResult.append("文件创建失败\n");
             }
 
-            ageCon = conAge.getSelectedItem().toString();
-            sexCon = conSex.getSelectedItem().toString();
-            nameCon = conName.getSelectedItem().toString();
-            phoneIdCon = conPhone.getSelectedItem().toString();
-            moneyCon = conMoney.getSelectedItem().toString();
-            birthCon = conBirth.getSelectedItem().toString();
-            personalIdCon = conPersonal.getSelectedItem().toString();
-            heirCon = conHeir.getSelectedItem().toString();
+            try {
+                ageCon = Objects.requireNonNull(conAge.getSelectedItem()).toString();
+                sexCon = Objects.requireNonNull(conSex.getSelectedItem()).toString();
+                nameCon = Objects.requireNonNull(conName.getSelectedItem()).toString();
+                phoneIdCon = Objects.requireNonNull(conPhone.getSelectedItem()).toString();
+                moneyCon = Objects.requireNonNull(conMoney.getSelectedItem()).toString();
+                birthCon = Objects.requireNonNull(conBirth.getSelectedItem()).toString();
+                personalIdCon = Objects.requireNonNull(conPersonal.getSelectedItem()).toString();
+                heirCon = Objects.requireNonNull(conHeir.getSelectedItem()).toString();
+            } catch (NullPointerException ex) {
+                JOptionPane.showMessageDialog(null, "请在条件判断下拉框中至少选择一个");
+                ex.printStackTrace();
+            }
 
-            ageInfo = ageText.getText().trim();
-            sexInfo = sexText.getText().trim();
-            nameInfo = nameText.getText().trim();
-            phoneIdInfo = phoneText.getText().trim();
-            moneyInfo = moneyText.getText().trim();
-            birthInfo = birthText.getText().trim();
-            personalIdInfo = personalText.getText().trim();
-            heirInfo = heirText.getText().trim();
+            try {
+                ageInfo = (selAge.isSelected())?ageText.getTextLegal(String.valueOf(UserPattern.age)).trim():
+                        ageText.getText().trim();
+                sexInfo = (selSex.isSelected())?sexText.getTextLegal(String.valueOf(UserPattern.sex)).trim():
+                        sexText.getText().trim();
+                nameInfo = (selName.isSelected())?nameText.getTextLegal(String.valueOf(UserPattern.name)).trim():
+                        nameText.getText().trim();
+                phoneIdInfo = (selPhone.isSelected())?phoneText.getTextLegal(String.valueOf(UserPattern.phone)).trim():
+                        phoneText.getText().trim();
+                moneyInfo = (selMoney.isSelected())?moneyText.getTextLegal(String.valueOf(UserPattern.money)).trim():
+                        moneyText.getText().trim();
+                birthInfo = (selBirth.isSelected())?birthText.getTextLegal(String.valueOf(UserPattern.birth)).trim():
+                        birthText.getText().trim();
+                personalIdInfo = (selPersonal.isSelected())?
+                        personalText.getTextLegal(String.valueOf(UserPattern.personalId)).trim():
+                        personalText.getText().trim();
+                heirInfo = (selHeir.isSelected())?heirText.getTextLegal(String.valueOf(UserPattern.heir)).trim():
+                        heirText.getText().trim();
+            } catch (NullPointerException ex) {
+                JOptionPane.showMessageDialog(null, ex.getMessage());
+                return;
+            } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+                JOptionPane.showMessageDialog(null, "模式不匹配，无法进行合法性检查");
+                return;
+            }
 
             request = new StringBuilder().append("I%");
 
@@ -317,7 +334,8 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
             FilesOperation filesOperation = new FilesOperation();
             filesOperation.readFile(file, response);
             showResult.append("文件" + file + "已获取\n");
-        }catch (IOException e){
+        } catch (IOException e) {
+            showResult.append("数据导出失败，请检查接收文件是否被其他应用占用\n");
             e.printStackTrace();
         }
     }

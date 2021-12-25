@@ -1,6 +1,7 @@
 package com.royenheart.server;
 
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +35,7 @@ public class ParseRequest {
     /**
      * 匹配字符串中的字节数组
      */
-    private static final String REG_BYTES = "\\[([-]{0,1}[0-9]+,{0,1})+\\]";
+    private static final String REG_BYTES = "\\[([-]?[0-9]+,?)+]";
     private static final String REG_VALUE = "(?<=:).*(?=;)";
 
     // 带条件判断的键值对
@@ -317,26 +318,16 @@ public class ParseRequest {
     }
 
     /**
-     * 查看是否缺少accountId还有其他字段中至少一个这个条件
-     * @return 是否缺少
-     */
-    public boolean accountIdWithOthers() {
-        return getRegAccountId() == null && (getRegMoney() == null || getRegAge() == null || getRegSexString() == null
-                || getRegName() == null || getRegPasswd() == null || getRegPhone() == null || getRegDeath() == null
-                || getRegBirth() == null || getRegPersonalId() == null || getRegHeir() == null);
-    }
-
-    /**
      * 查看是否缺少用户全部所需字段中的任何一个或多个
      * @return 是否缺少
      */
     public boolean allPatterns() {
-        return getRegAccountId() == null || getRegMoney() == null ||
-                getRegAge() == null || getRegSexString() == null ||
-                getRegName() == null || getRegPasswd() == null ||
-                getRegPhone() == null || getRegDeath() == null ||
-                getRegBirth() == null || getRegPersonalId() == null ||
-                getRegHeir() == null;
+        return Objects.equals(getRegAccountId(), "") || Objects.equals(getRegMoney(), "") ||
+                Objects.equals(getRegAge(), "") || Objects.equals(getRegSexString(), "") ||
+                Objects.equals(getRegName(), "") || Objects.equals(getRegPasswd(), "") ||
+                Objects.equals(getRegPhone(), "") || Objects.equals(getRegDeath(), "") ||
+                Objects.equals(getRegBirth(), "") || Objects.equals(getRegPersonalId(), "") ||
+                Objects.equals(getRegHeir(), "");
     }
 
 }

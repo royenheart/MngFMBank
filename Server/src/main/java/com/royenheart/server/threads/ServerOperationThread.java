@@ -18,18 +18,6 @@ import java.sql.SQLException;
 
 /**
  * 普通操作线程
- * <p>
- *     可实现功能
- *     1. 查询余额
- *     2. 取钱
- *     3. 存钱
- *     4. 转账
- *     5. 修改用户信息
- *     6. 开户
- *     7. 销户
- *     8. 导入xls文件批量操作（需要额外的转换）
- *     9. 将特定查询（Query）再转换为xls文件返回给服务端
- * </p>
  * @author RoyenHeart
  */
 public class ServerOperationThread extends ServerThread implements Runnable {

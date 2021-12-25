@@ -9,6 +9,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 一个客户端对应一个连接
@@ -23,6 +29,24 @@ public class Connection {
     private static Socket socket = new Socket();
     private static final Client CLIENT_SETS = new ClientJsonReader().getClientFromSets();
     private static boolean useAdmin;
+    private static Date planetTime;
+    private static final ScheduledExecutorService TIME_UPDATE_MISSION = Executors.newScheduledThreadPool(1);
+
+    static {
+        TIME_UPDATE_MISSION.scheduleAtFixedRate(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Connection.updateTime();
+                            System.out.println("行星当前时间 : " + planetTime);
+                        } catch (IOException | ParseException e) {
+                            System.err.println("服务器时间无法同步");
+                            e.printStackTrace();
+                        }
+                    }
+                }, 0, 1, TimeUnit.MINUTES);
+    }
 
     public static boolean getUseAdmin() {
         return useAdmin;
@@ -57,6 +81,14 @@ public class Connection {
         }
     }
 
+    public static void updateTime() throws IOException, ParseException {
+        if (socketConnectionStatus()) {
+            writeUTF("Z%%");
+            String date = readUTF();
+            planetTime = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+        }
+    }
+
     public static void writeUTF(String str) throws IOException {
         out.writeUTF(str);
     }
@@ -77,6 +109,10 @@ public class Connection {
         new ClientJsonWriter().store(CLIENT_SETS);
     }
 
+    /**
+     * 查看socket的连接状态
+     * @return socket是否已连接
+     */
     public static boolean socketConnectionStatus() {
         return socket.isConnected();
     }

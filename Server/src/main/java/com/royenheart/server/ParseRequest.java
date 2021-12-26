@@ -49,6 +49,8 @@ public class ParseRequest {
             "(money:[^;\\f\\n\\r\\t]+[0-9]+;)|(money:[^;\\f\\n\\r\\t]+[0-9]+\\.[0-9]+;)";
     private static final String REG_DEATH_CONDITION =
             "(death:[^;\\f\\n\\r\\t]+true;)|(death:[^;\\f\\n\\rt\\t]+false;)";
+    private static final String REG_DEATH_CONDITION_01 =
+            "(death:[^;\\f\\n\\r\\t]+1;)|(death:[^;\\f\\n\\rt\\t]+0;)";
     private static final String REG_BIRTH_CONDITION = "birth:[^;\\f\\n\\r\\t]+[0-9]+-[0-9]+-[0-9]+;";
     private static final String REG_ACCOUNTID_CONDITION = "accountId:[^;\\f\\n\\r\\t]+[0-9]{10};";
     private static final String REG_PERSONALID_CONDITION = "personalId:[^;\\f\\n\\r\\t]+[0-9]{12};";
@@ -166,6 +168,14 @@ public class ParseRequest {
         return getRegV(REG_DEATH_CONDITION, "death");
     }
 
+    /**
+     * 匹配出0、1为值的死亡字段
+     * @return 死亡字段值（0、1）
+     */
+    public String getRegDeathCondition01() {
+        return getRegV(REG_DEATH_CONDITION_01, "death");
+    }
+
     public String getRegBirthCondition() {
         return getRegV(REG_BIRTH_CONDITION, "birth");
     }
@@ -260,6 +270,12 @@ public class ParseRequest {
         }
     }
 
+    /**
+     * 在请求主体内容中找到键值对
+     * @param reg 对应键值对正则匹配
+     * @param name 需要匹配人的字段名称
+     * @return 返回匹配到的请求
+     */
     private String getReg(String reg, String name) {
         Pattern r = Pattern.compile(reg, Pattern.CASE_INSENSITIVE);
         Matcher m = r.matcher(content);

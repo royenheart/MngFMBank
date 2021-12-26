@@ -752,17 +752,19 @@ public class Functions {
                 }
             }
 
-            // 查询需要销户的人
+            // 查询需要销户的人（1代表已死亡）
             LinkedList<HashMap<String, String>> query = new AtomicQueryAll(con, tables,
-                    new ParseRequest("I%death:= TRUE;age:>=70;%")).queryAgeAndDeath("OR");
+                    new ParseRequest("I%death:= 1;age:>=70;%")).queryAgeAndDeath("OR");
 
-            // 指定继承人进行财产的继承，同时进行销户操作
+            // 当有人需要进行销户时，指定继承人进行财产的继承，同时进行销户操作
             for (HashMap<String, String> user : query) {
                 result.append(transferMoney(new ParseRequest("D%accountId:" + user.get("accountId") + ";accountId:" +
-                                      user.get("heir") + ";password:" + user.get("password") + ";%"),
+                                      user.get("heir") + ";password:" + user.get("password") +
+                                      ";money:" + user.get("money") + ";%"),
                               con, tables, planetSets))
                       .append("\n");
-                result.append(delUser(new ParseRequest("G%accountId:" + user.get("accountId") + ";%"),
+                result.append(delUser(new ParseRequest("G%accountId:" + user.get("accountId") + ";password:" +
+                                      user.get("password") + ";%"),
                               con, tables, planetSets))
                       .append("\n");
             }

@@ -14,6 +14,15 @@ public class DatabaseUpdateUser extends DataBaseUpdate {
 
     public DatabaseUpdateUser() {}
 
+    /**
+     * 执行更新用户信息指令
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @param keyValue 条件子句中用到，指明更新查询条件和范围
+     * @param fieldWithValue 需要被更新的字段
+     * @return 是否执行成功
+     * @throws SQLException 数据库请求失败错误
+     */
     synchronized public boolean executeSql(Connection con, String tables, HashMap<String, String> keyValue,
                                            HashMap<String, String> fieldWithValue)
             throws SQLException {
@@ -29,12 +38,12 @@ public class DatabaseUpdateUser extends DataBaseUpdate {
     }
 
     synchronized public boolean executeSqlNoConditionBasedOnPrevious(Connection con, String tables,
-                                                                     HashMap<String, String> keyValue )
+                                                                     HashMap<String, String> fieldWithValue )
             throws SQLException {
         this.con = con;
         this.tables = tables;
-        this.keyValue = keyValue;
-        this.fieldWithValue = null;
+        this.keyValue = null;
+        this.fieldWithValue = fieldWithValue;
 
         Statement stmt = con.createStatement();
         int success = stmt.executeUpdate(this.getSqlNoConditionBasedOnPrevious());

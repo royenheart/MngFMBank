@@ -29,7 +29,8 @@ public class DatabaseMoneyUpdate extends DataBaseUpdate {
     }
 
     synchronized public boolean executeSqlAllBasedOnPrevious(Connection con, String tables,
-                                                             HashMap<String, String> fieldWithValue) throws SQLException {
+                                                             HashMap<String, String> fieldWithValue)
+            throws SQLException {
         this.con = con;
         this.tables = tables;
         this.fieldWithValue = fieldWithValue;

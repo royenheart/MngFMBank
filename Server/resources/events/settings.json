@@ -1,12 +1,34 @@
-[
-  {
-    "description": "test1",
-    "effects": {
-      "effWars": -3,
-      "effBubble": 0.2,
-      "effEcoRate": 0.2,
-      "effBankWill": 0.2,
-      "effInvestFire": 0.5
+{
+  "events": [
+    {
+      "description": "normal day",
+      "effects": {
+        "effWars": -3.0,
+        "effBubble": 0.2,
+        "effEcoRate": 0.2,
+        "effBankWill": 0.2,
+        "effInvestFire": 10
+      }
+    },
+    {
+      "description": "sunny day",
+      "effects": {
+        "effWars": 3.0,
+        "effBubble": -0.2,
+        "effEcoRate": -0.2,
+        "effBankWill": -0.2,
+        "effInvestFire": 20
+      }
+    },
+    {
+      "description": "plain day",
+      "effects": {
+        "effWars": 55,
+        "effBubble": 0.6,
+        "effEcoRate": -0.7,
+        "effBankWill": 0.23,
+        "effInvestFire": -12
+      }
     }
-  }
-]
+  ]
+}

@@ -47,6 +47,8 @@ public class ServerTimeThread extends ServerThread implements Runnable {
         double bankWill = planetSets.restraintBankWill(planetSets.getBankWill() + happen.getEffBankWill());
         double investFire = planetSets.restraintInvestFire(planetSets.getInvestFire() + happen.getEffInvestFire());
 
+        System.out.println("星球事件发生，影响已计算。计算今天的利息......");
+
         // 计算利息
         double interest = CalculateApi.interest(wars, ecoRate, ecoBubble, bankWill, investFire);
         planetSets.setWars(wars);
@@ -55,10 +57,14 @@ public class ServerTimeThread extends ServerThread implements Runnable {
         planetSets.setBankWill(bankWill);
         planetSets.setInvestFire(investFire);
 
+        System.out.println("利息计算完毕，正在统计事件并更新时间");
+
         // 更新行星事件，记录是否过了一年
         boolean yearPass = planetSets.updatePlanetTime();
         BankData.addEvents(planetSets.getYear(), happen);
         BankData.addInterest(planetSets.getYear(), interest);
+
+        System.out.println("正在连接数据库");
 
         // 连接数据库
         Connection newCon = new DatabaseLink(serverSets).connectDb();
@@ -69,11 +75,13 @@ public class ServerTimeThread extends ServerThread implements Runnable {
             return;
         }
 
+        System.out.println("数据库连接成功，正在执行服务器数据刷新，请勿关闭");
+
         try {
             String result = (String) ServerThread.getFunc().get("L").invoke(Functions.getMe(),
                     newCon, "Users", interest, yearPass, planetSets);
             newCon.close();
-            System.out.println(result);
+            System.out.print(result);
         } catch (IllegalAccessException | InvocationTargetException e) {
             System.err.println("服务器更新方法拒绝服务或无效方法，请检查代码");
             e.printStackTrace();

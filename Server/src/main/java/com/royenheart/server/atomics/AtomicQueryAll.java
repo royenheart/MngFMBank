@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import com.royenheart.basicsets.programsettings.UserPattern;
 import com.royenheart.server.ParseRequest;
 import com.royenheart.server.databaseopt.DatabaseQuery;
-import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -96,7 +95,7 @@ public class AtomicQueryAll extends AtomicOperations {
         }, new HashMap<String, String>() {
             {
                 this.put(String.valueOf(UserPattern.age), parseRequest.getRegAgeCondition());
-                this.put(String.valueOf(UserPattern.death), parseRequest.getRegDeathCondition());
+                this.put(String.valueOf(UserPattern.death), parseRequest.getRegDeathCondition01());
             }
         }, link);
         return gson.fromJson(r1, new TypeToken<LinkedList<HashMap<String, String>>>() {}.getType());

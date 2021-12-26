@@ -30,6 +30,7 @@ public class Connection {
     private static final Client CLIENT_SETS = new ClientJsonReader().getClientFromSets();
     private static boolean useAdmin;
     private static Date planetTime;
+    private static Date lastUpdateTime;
     private static final ScheduledExecutorService TIME_UPDATE_MISSION = Executors.newScheduledThreadPool(1);
 
     static {
@@ -86,6 +87,7 @@ public class Connection {
             writeUTF("Z%%");
             String date = readUTF();
             planetTime = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            lastUpdateTime = new Date();
         }
     }
 
@@ -125,6 +127,30 @@ public class Connection {
             socket = new Socket();
         } catch (IOException e) {
             System.err.println("连接已丢失");
+        }
+    }
+
+    /**
+     * 获取服务器时间
+     * @return 返回当前服务器时间(yyyy-MM-dd格式)
+     */
+    public static String getPlanetTime() {
+        if (planetTime == null) {
+            return "服务器时间未同步";
+        } else {
+            return new SimpleDateFormat("yyyy-MM-dd").format(planetTime);
+        }
+    }
+
+    /**
+     * 获取上一次同步的真实时间
+     * @return 返回上一次同步服务器时间的现实时间（yyyy-MM-dd格式）
+     */
+    public static String getLastUpdateTime() {
+        if (lastUpdateTime == null) {
+            return "尚未同步过时间";
+        } else {
+            return lastUpdateTime.toString();
         }
     }
 

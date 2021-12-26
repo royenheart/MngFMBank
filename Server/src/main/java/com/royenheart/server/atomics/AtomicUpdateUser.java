@@ -54,7 +54,7 @@ public class AtomicUpdateUser extends AtomicOperations {
         DatabaseUpdateUser o1 = (DatabaseUpdateUser) OPERATIONS.get("uu");
         return o1.executeSqlNoConditionBasedOnPrevious(con, tables, new HashMap<String, String>(){
             {
-                this.put("money", "1");
+                this.put("age", "1");
             }
         });
     }

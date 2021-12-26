@@ -26,7 +26,7 @@ public class Planet {
     public static double BANK_WILL_MIN = 0;
     public static double BANK_WILL_MAX = 1;
     public static double INVEST_FIRE_MIN = 0;
-    public static double INVEST_FIRE_MAX = 1;
+    public static double INVEST_FIRE_MAX = 100;
 
     // Attributes
 

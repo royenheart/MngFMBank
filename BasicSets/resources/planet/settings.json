@@ -1,8 +1,8 @@
 {
-  "wars": 0,
+  "wars": 10,
   "ecoRate": 10,
   "ecoBubble": 0.3,
   "bankWill": 0.6,
-  "investFire": 0.4,
+  "investFire": 33,
   "planetTime": "2045-01-01"
 }

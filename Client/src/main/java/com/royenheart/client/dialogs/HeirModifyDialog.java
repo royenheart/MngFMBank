@@ -11,6 +11,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+/**
+ * 继承人信息修改
+ * @author RoyenHeart
+ * @author revrg
+ * @author Tang-li-bian
+ */
 public class HeirModifyDialog extends JDialog implements Runnable, ActionListener {
 
     Thread t1 = null;
@@ -22,7 +28,7 @@ public class HeirModifyDialog extends JDialog implements Runnable, ActionListene
 
     public HeirModifyDialog(JFrame jf,String title,boolean isModel){
         super(jf, title, isModel);
-        // face
+        // 主界面设置
         this.setBounds(600, 300, 300, 300);
         Box vBox = Box.createVerticalBox();
 

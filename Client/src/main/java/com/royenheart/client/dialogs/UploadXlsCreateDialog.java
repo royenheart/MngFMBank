@@ -75,13 +75,14 @@ public class UploadXlsCreateDialog extends JDialog implements Runnable, ActionLi
             }
 
             if (file == null) {
+                // 当文件获取失败时，组织下一步操作
                 showResult.append("文件获取失败\n");
             } else {
                 showResult.append("文件已获取\n");
+                FilesOperation filesOperation = new FilesOperation();
+                request = "H%" + filesOperation.writeFile(file) + "%";
+                sendButton.setEnabled(true);
             }
-            FilesOperation filesOperation = new FilesOperation();
-            request = "H%" + filesOperation.writeFile(file) + "%";
-            sendButton.setEnabled(true);
         } else if (e.getSource() == sendButton) {
             try {
                 Connection.writeUTF(request);

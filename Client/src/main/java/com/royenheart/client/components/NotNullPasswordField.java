@@ -17,7 +17,11 @@ public class NotNullPasswordField extends JPasswordField {
 
     /**
      * 获取与给定检查模式符合的合法密码
-     * @return 与给定检查模式匹配的合法密码
+     * @return 与给定检查模式符合的合法密码
+     * @throws InvocationTargetException 模式匹配出错
+     * @throws NoSuchMethodException 模式匹配出错
+     * @throws IllegalAccessException 模式匹配出错
+     * @throws NullPointerException 模式匹配出错
      */
     public char[] getPasswordLegal() throws
             InvocationTargetException, NoSuchMethodException, IllegalAccessException, NullPointerException {
@@ -32,6 +36,12 @@ public class NotNullPasswordField extends JPasswordField {
         }
     }
 
+    /**
+     * 判断密码是否非空
+     * @param result 密码框文本
+     * @return 是否非空
+     * @throws NullPointerException 密码空错误
+     */
     public boolean getPasswordNotNull(char[] result) throws NullPointerException {
         if (result == null || result.length == 0 || new String(result).trim().matches("[\\s]*")) {
             throw new NullPointerException("密码为空");

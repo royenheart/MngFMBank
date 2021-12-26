@@ -36,5 +36,4 @@ public class AtomicDelUser extends AtomicOperations {
         });
     }
 
-
 }

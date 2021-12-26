@@ -35,14 +35,6 @@ public class BasicSets {
             server.setIp(in.nextLine());
         }
 
-        System.out.println("The Server port is " + server.getPort());
-        System.out.println("Want to change it?(y/n)");
-        tmp = in.nextLine();
-        if ("y".equals(tmp)) {
-            System.out.println("Now insert the new port you want to open your server");
-            server.setIp(in.nextLine());
-        }
-
         ClientJsonWriter as = new ClientJsonWriter();
         as.store(client);
         ServerJsonWriter bs = new ServerJsonWriter();
@@ -65,7 +57,7 @@ public class BasicSets {
         System.out.println("Want to change it?(y/n)");
         String tmp = in.nextLine();
         if ("y".equals(tmp)) {
-            System.out.println("Now insert the new port you want to open your server");
+            System.out.println("Now insert the new ip you want to open your server");
             server.setIp(in.nextLine());
         }
 
@@ -74,7 +66,23 @@ public class BasicSets {
         tmp = in.nextLine();
         if ("y".equals(tmp)) {
             System.out.println("Now insert the new port you want to open your server");
-            server.setIp(in.nextLine());
+            server.setPort(in.nextLine());
+        }
+
+        System.out.println("The database ip is " + server.getDatabaseIp());
+        System.out.println("Want to change it?(y/n)");
+        tmp = in.nextLine();
+        if ("y".equals(tmp)) {
+            System.out.println("Now insert the new ip you want to open your database");
+            server.setDatabaseIp(in.nextLine());
+        }
+
+        System.out.println("The database port is " + server.getDatabasePort());
+        System.out.println("Want to change it?(y/n)");
+        tmp = in.nextLine();
+        if ("y".equals(tmp)) {
+            System.out.println("Now insert the new port you want to open your database");
+            server.setDatabasePort(in.nextLine());
         }
 
         ClientJsonWriter as = new ClientJsonWriter();

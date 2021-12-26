@@ -79,6 +79,14 @@ public class Server {
         this.port = port;
     }
 
+    public void setDatabaseIp(String databaseIp) {
+        this.databaseIp = databaseIp;
+    }
+
+    public void setDatabasePort(String databasePort) {
+        this.databasePort = databasePort;
+    }
+
     public String getDatabaseUser() {
         return databaseUser;
     }

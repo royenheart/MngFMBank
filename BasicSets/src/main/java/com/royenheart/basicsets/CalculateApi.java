@@ -16,6 +16,8 @@ import java.util.HashMap;
  */
 public class CalculateApi {
 
+    // 模式-功能匹配哈希表
+
     private static final HashMap<String, String> MOD_FUNC = new HashMap<>();
 
     static {
@@ -226,7 +228,12 @@ public class CalculateApi {
 
     /**
      * 根据给定星球数据计算计算利息
-     * @return 计算出的利息
+     * @param wars 战争数量
+     * @param ecoRate 经济增速
+     * @param ecoBubble 经济泡沫
+     * @param bankWill 储蓄意愿
+     * @param investFire 投资热度
+     * @return 最终计算的利息
      */
     public static double interest(int wars, double ecoRate, double ecoBubble, double bankWill, double investFire) {
         return 1.0 * (255 - wars) / 300.0

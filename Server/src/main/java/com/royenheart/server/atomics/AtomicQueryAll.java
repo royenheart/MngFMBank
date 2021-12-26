@@ -35,7 +35,7 @@ public class AtomicQueryAll extends AtomicOperations {
     }
 
     /**
-     * 查询全部信息
+     * 查询全部用户字段信息
      * @param link 查询表达式的连接符号
      * @return 查询结果数组
      * @throws SQLException 数据库请求错误

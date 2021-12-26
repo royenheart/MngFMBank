@@ -6,7 +6,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 
 /**
- * 删除用户
+ * 删除用户数据库操作
  * @author RoyenHeart
  */
 public class DatabaseDelUser extends DatabaseDelete {

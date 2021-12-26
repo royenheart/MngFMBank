@@ -1,0 +1,10 @@
+com.royenheart.basicsets
+com.royenheart.basicsets.jsonsettings
+com.royenheart.basicsets.programsettings
+com.royenheart.client
+com.royenheart.client.components
+com.royenheart.client.dialogs
+com.royenheart.server
+com.royenheart.server.atomics
+com.royenheart.server.databaseopt
+com.royenheart.server.threads

@@ -28,6 +28,9 @@ public class Connection {
     private static DataOutputStream out;
     private static Socket socket = new Socket();
     private static final Client CLIENT_SETS = new ClientJsonReader().getClientFromSets();
+    /**
+     * 是否以管理员模式进入
+     */
     private static boolean useAdmin;
     private static Date planetTime;
     private static Date lastUpdateTime;
@@ -82,6 +85,11 @@ public class Connection {
         }
     }
 
+    /**
+     * 向服务端发送请求更新时间
+     * @throws IOException 流获取失败
+     * @throws ParseException 时间格式解析错误
+     */
     public static void updateTime() throws IOException, ParseException {
         if (socketConnectionStatus()) {
             writeUTF("Z%%");
@@ -99,10 +107,20 @@ public class Connection {
         return in.readUTF();
     }
 
+    /**
+     * 获取套接字输入流
+     * @return 返回套接字输入流
+     * @throws IOException 流获取失败
+     */
     private static DataInputStream getInput() throws IOException {
         return new DataInputStream(socket.getInputStream());
     }
 
+    /**
+     * 获取套接字输出流
+     * @return 返回套接字输出流
+     * @throws IOException 流获取失败
+     */
     private static DataOutputStream getOutput() throws IOException {
         return new DataOutputStream(socket.getOutputStream());
     }

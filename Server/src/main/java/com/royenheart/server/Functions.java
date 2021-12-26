@@ -47,6 +47,8 @@ public class Functions {
      * 查询余额
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
+     * @param tables 查询使用的数据表
+     * @param planetSets 使用的行星数据
      * @return 结果字符串，以Json或者普通字符串格式发送
      */
     synchronized public String queryMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -60,7 +62,7 @@ public class Functions {
             LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
                     parseRequest.getRegAccountId()).query();
             if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
-                System.err.println("密码不匹配，无法进行转账");
+                System.err.println("密码不匹配，无法进行查询");
                 return "密码不匹配，无法进行查询";
             }
 
@@ -82,6 +84,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 取钱数据
      */
     synchronized public String getMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -98,7 +101,7 @@ public class Functions {
             LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
                     parseRequest.getRegAccountId()).query();
             if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
-                System.err.println("密码不匹配，无法进行转账");
+                System.err.println("密码不匹配，无法进行取钱");
                 return "密码不匹配，无法取钱";
             }
 
@@ -133,6 +136,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 返回更新的信息
      */
     synchronized public String saveMoney(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -149,8 +153,8 @@ public class Functions {
             LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
                     parseRequest.getRegAccountId()).query();
             if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
-                System.err.println("密码不匹配，无法进行转账");
-                return "密码不匹配，无法取钱";
+                System.err.println("密码不匹配，无法进行存钱");
+                return "密码不匹配，无法存钱";
             }
 
             query = new AtomicQueryMoney(con, tables,
@@ -184,6 +188,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 数据库查询信息
      */
     synchronized public String transferMoney(ParseRequest parseRequest,
@@ -252,6 +257,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 记录更新信息
      */
     synchronized public String editUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -354,6 +360,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 返回更新的信息
      */
     synchronized public String addUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -403,6 +410,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 返回更新的信息
      */
     synchronized public String delUser(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -419,8 +427,8 @@ public class Functions {
             LinkedList<HashMap<String, String>> query = new AtomicQueryPasswd(con, tables,
                     parseRequest.getRegAccountId()).query();
             if (!query.getFirst().get(String.valueOf(UserPattern.password)).equals(parseRequest.getRegPasswd())) {
-                System.err.println("密码不匹配，无法进行转账");
-                return "密码不匹配，无法取钱";
+                System.err.println("密码不匹配，无法销户");
+                return "密码不匹配，无法销户";
             }
 
             boolean success = new AtomicDelUser(con, tables, parseRequest.getRegAccountId()).delete();
@@ -445,6 +453,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析器
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 返回登录的信息，之后对应线程的登录状态设置为真
      */
     synchronized public String login(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -482,6 +491,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 数据库查询信息
      */
     synchronized public String xlsCreate(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -517,7 +527,8 @@ public class Functions {
                 boolean rm = file.delete();
                 if (success && errors.isEmpty() && rm ) {
                     BankData.addNewUsers(planetSets.getYear(), users.size() - errors.size());
-                    return "批量开户成功";
+                    return "批量开户成功，" + "共成功创建用户" + (users.size() - errors.size())
+                            + "个，创建失败" + errors.size() + "个，请检查字段合法性以及ID冲突" ;
                 } else if (!(success && errors.isEmpty())) {
                     StringBuilder errMsg = new StringBuilder("批量开户失败，请检查\n");
                     for (Integer tmp : errors) {
@@ -648,6 +659,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return xls文件的字节数组列表字符串，交给客户端，客户端解析之后进行文件的转换
      */
     synchronized public String queryXls(ParseRequest parseRequest, Connection con, String tables, Planet planetSets) {
@@ -725,6 +737,7 @@ public class Functions {
      * @param tables 需要更新的数据表
      * @param interest 利息率
      * @param yearPass 是否过了一年，是为真
+     * @param planetSets 行星数据
      * @return 是否成功执行操作
      */
     synchronized public String updatePlanet(Connection con, String tables, double interest,
@@ -752,7 +765,7 @@ public class Functions {
                 }
             }
 
-            // 查询需要销户的人（1代表已死亡）
+            // 查询需要销户的人（1 代表已死亡）
             LinkedList<HashMap<String, String>> query = new AtomicQueryAll(con, tables,
                     new ParseRequest("I%death:= 1;age:>=70;%")).queryAgeAndDeath("OR");
 
@@ -791,6 +804,7 @@ public class Functions {
      * @param parseRequest 客户端请求解析
      * @param con 数据库连接
      * @param tables 数据表
+     * @param planetSets 行星数据
      * @return 数据库查询信息
      */
     synchronized public String queryYearlyReport(ParseRequest parseRequest, Connection con,
@@ -808,6 +822,7 @@ public class Functions {
                 return "服务器IO错误，请联系管理员";
             }
 
+            // 创建年终报告
             Document document = new Document();
             PdfWriter.getInstance(document, new FileOutputStream(file));
             document.open();
@@ -815,6 +830,7 @@ public class Functions {
             document.addTitle("Year Report");
             document.add(new Paragraph("Planet Time : " + planetSets.getPlanetTime()));
 
+            // 添加利息变化
             LinkedList<Double> interests = BankData.getInterest(planetSets.getYear());
             StringBuilder value = new StringBuilder();
             value.append("Yearly Interest changes: \n");
@@ -823,6 +839,7 @@ public class Functions {
             }
             document.add(new Paragraph(String.valueOf(value)));
 
+            // 添加账号总数、余额总数、新开用户数
             LinkedList<HashMap<String, String>> query = new AtomicQueryAll(con, tables, parseRequest).queryOneForAll("money");
             document.add(new Paragraph("Account Amounts : " + query.size()));
             BigDecimal sum = new BigDecimal(0);
@@ -832,6 +849,7 @@ public class Functions {
             document.add(new Paragraph("Money Sum : " + sum));
             document.add(new Paragraph("Yearly new Accounts : " + BankData.getNewUsers(planetSets.getYear())));
 
+            // 列出今年发生的事件
             LinkedList<SingleEvent> events = BankData.getEvents(planetSets.getYear());
             value = new StringBuilder();
             value.append("Things Happen this year : \n");

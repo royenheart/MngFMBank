@@ -4,6 +4,10 @@ import com.royenheart.server.databaseopt.*;
 
 import java.util.HashMap;
 
+/**
+ * 原子操作根类
+ * @author RoyenHeart
+ */
 abstract public class AtomicOperations {
 
     /**

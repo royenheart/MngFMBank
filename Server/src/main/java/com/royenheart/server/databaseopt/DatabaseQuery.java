@@ -45,6 +45,7 @@ public class DatabaseQuery extends DatabaseSelect implements DataLimit {
      * @param tables 数据表
      * @param fields 需要被查询的字段
      * @param keyValue 查询键值对
+     * @param link 各条件判断之间的逻辑运算符
      * @return gson格式查询数据
      * @throws SQLException 数据库请求错误
      */

@@ -37,6 +37,14 @@ public class DatabaseUpdateUser extends DataBaseUpdate {
         return (success >= 1)?Boolean.TRUE:Boolean.FALSE;
     }
 
+    /**
+     * 无条件判断执行sql语句，且在原有字段值基础上进行
+     * @param con 数据库连接
+     * @param tables 数据表
+     * @param fieldWithValue 需要更新的字段和字段值
+     * @return 是否成功执行
+     * @throws SQLException 数据库请求失败
+     */
     synchronized public boolean executeSqlNoConditionBasedOnPrevious(Connection con, String tables,
                                                                      HashMap<String, String> fieldWithValue )
             throws SQLException {

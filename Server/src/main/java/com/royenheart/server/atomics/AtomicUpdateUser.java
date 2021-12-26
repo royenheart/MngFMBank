@@ -24,6 +24,11 @@ public class AtomicUpdateUser extends AtomicOperations {
         this.updates = updates;
     }
 
+    /**
+     * 无条件语句，更新所有用户信息
+     * @param con 数据库连接
+     * @param tables 更新的数据表
+     */
     public AtomicUpdateUser(Connection con, String tables) {
         this.con = con;
         this.tables = tables;

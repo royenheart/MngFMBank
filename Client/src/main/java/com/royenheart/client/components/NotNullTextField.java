@@ -18,6 +18,10 @@ public class NotNullTextField extends JTextField {
     /**
      * 获取与给定检查模式符合的合法文本
      * @param checkPattern 检查模式，传入CalculateApi进行对应的合法性判断
+     * @throws InvocationTargetException 模式匹配出错
+     * @throws NoSuchMethodException 模式匹配出错
+     * @throws IllegalAccessException 模式匹配出错
+     * @throws NullPointerException 模式匹配出错
      * @return 与给定检查模式匹配的合法文本
      */
     public String getTextLegal(String checkPattern) throws
@@ -35,6 +39,7 @@ public class NotNullTextField extends JTextField {
 
     /**
      * 获取非空文本值
+     * @param result 需要判断的文本
      * @return 非空文本值
      * @throws NullPointerException 当文本值为空时，掷出错误提示调用者
      */

@@ -18,6 +18,12 @@ public class AtomicCreateUser extends AtomicOperations {
     private final LinkedList<User> users;
     private final User user;
 
+    /**
+     * 创建操作，用于创建单个用户
+     * @param con 数据库连接
+     * @param tables 需要插入的数据表
+     * @param user 创建的用户
+     */
     public AtomicCreateUser(Connection con, String tables, User user) {
         this.con = con;
         this.tables = tables;
@@ -29,6 +35,12 @@ public class AtomicCreateUser extends AtomicOperations {
         };
     }
 
+    /**
+     * 创建操作，用于创建多个用户
+     * @param con 数据库连接
+     * @param tables 需要插入的数据表
+     * @param users 需要创建的用户列表
+     */
     public AtomicCreateUser(Connection con, String tables, LinkedList<User> users) {
         this.con = con;
         this.tables = tables;

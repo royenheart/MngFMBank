@@ -28,7 +28,7 @@ public class GetYearlyReportDialog extends JDialog implements Runnable, ActionLi
     public GetYearlyReportDialog(JFrame jf,String title,boolean isModel){
         super(jf, title, isModel);
         this.jf = jf;
-        // 主要界面设置
+        // 主界面设置
         this.setBounds(600, 300, 500, 300);
         Box vBox = Box.createVerticalBox();
 
@@ -79,11 +79,12 @@ public class GetYearlyReportDialog extends JDialog implements Runnable, ActionLi
 
             if (file != null) {
                 showResult.append("文件创建成功\n");
+                request = "J%%";
+                sendButton.setEnabled(true);
             } else {
+                // 当文件创建失败时，不进行传输操作
                 showResult.append("文件创建失败\n");
             }
-            request = "J%%";
-            sendButton.setEnabled(true);
         } else if (e.getSource() == sendButton) {
             try {
                 Connection.writeUTF(request);

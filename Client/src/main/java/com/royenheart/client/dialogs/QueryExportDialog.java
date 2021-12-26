@@ -63,7 +63,7 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
     public QueryExportDialog(JFrame jf, String title, boolean isModel){
         super(jf, title, isModel);
         this.jf = jf;
-        // 主要界面设置
+        // 主界面设置
         this.setBounds(600, 300, 500, 500);
         Box vBox = Box.createVerticalBox();
 
@@ -259,7 +259,9 @@ public class QueryExportDialog extends JDialog implements Runnable, ActionListen
             if (file != null) {
                 showResult.append("文件创建成功\n");
             } else {
+                // 当文件创建失败时，阻止下一步操作
                 showResult.append("文件创建失败\n");
+                return;
             }
 
             try {

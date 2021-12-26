@@ -28,9 +28,7 @@ public class Planet {
     public static double INVEST_FIRE_MIN = 0;
     public static double INVEST_FIRE_MAX = 100;
 
-    // Attributes
-
-    public static String bankName = "飞马皇家银行";
+    // 星球属性
 
     @Expose
     private int wars;

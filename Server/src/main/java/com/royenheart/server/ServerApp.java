@@ -13,13 +13,12 @@ import java.text.ParseException;
 import java.util.concurrent.*;
 
 /**
- * 服务端Java程序主体
+ * 服务端Java程序主类
  * <p>
  *     主要负责（组织各模块，具体功能由模块实现）：
- *     1. 邮件系统管理
- *     2. 客户端访问多线程处理请求
- *     3. 多开辟一个线程运行星球的时间
- *     分配线程，管理资源，输出连接
+ *     1. 客户端访问多线程处理请求
+ *     2. 多开辟一个线程定期执行星球数据的更新
+ *     分配线程，管理资源，命令管理
  * </p>
  * @author RoyenHeart
  */
@@ -40,6 +39,7 @@ public class ServerApp {
      * 为OPERATIONS线程池分配线程任务
      * @param client 客户端socket连接
      * @param serverSets 服务端设置
+     * @param planetSets 行星设置
      */
     public static void executorOperationsSubmit(Socket client, Server serverSets, Planet planetSets) {
         OPERATIONS.submit(new ServerOperationThread(client, serverSets, planetSets));
